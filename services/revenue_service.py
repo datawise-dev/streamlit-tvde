@@ -1,7 +1,7 @@
 from typing import Dict, List
 import pandas as pd
 from psycopg2.extras import execute_values
-from database.connection import get_db_connection
+from database.connection import get_db_connection, get_db_engine
 
 class RevenueService:
     @staticmethod
@@ -55,25 +55,25 @@ class RevenueService:
     @staticmethod
     def load_data() -> pd.DataFrame:
         """Load all data from database."""
-        with get_db_connection() as conn:
-            query = """
-                SELECT 
-                    id, 
-                    start_date, 
-                    end_date, 
-                    driver_name, 
-                    license_plate, 
-                    platform, 
-                    gross_revenue, 
-                    commission_percentage, 
-                    tip, 
-                    num_travels, 
-                    num_kilometers,
-                    created_at
-                FROM revenue 
-                ORDER BY created_at DESC
-            """
-            return pd.read_sql_query(query, conn)
+        query = """
+            SELECT 
+                id, 
+                start_date, 
+                end_date, 
+                driver_name, 
+                license_plate, 
+                platform, 
+                gross_revenue, 
+                commission_percentage, 
+                tip, 
+                num_travels, 
+                num_kilometers,
+                created_at
+            FROM revenue 
+            ORDER BY created_at DESC
+        """
+        engine = get_db_engine()
+        return pd.read_sql_query(query, engine)
 
     @staticmethod
     def delete_records(ids: List[int]) -> bool:

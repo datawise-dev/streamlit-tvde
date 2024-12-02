@@ -1,35 +1,15 @@
 import streamlit as st
-from views.manual_entry import show_manual_entry_view
-from views.csv_upload import show_csv_upload_view
-from views.data_view import show_data_view
-from views.faq_view import show_faq_view
-
-def show_main_content():
-    """Display the main revenue management interface."""
-    st.title("Revenue Data Management")
-    
-    try:
-        
-        # Create tabs for different sections
-        tab1, tab2, tab3 = st.tabs(["Manual Entry", "CSV Upload", "View Data"])
-        
-        with tab1:
-            show_manual_entry_view()
-            
-        with tab2:
-            show_csv_upload_view()
-            
-        with tab3:
-            show_data_view()
-            
-    except Exception as e:
-        st.error(f"Application Error: {str(e)}")
-        st.error("Please check your database connection settings")
+from views.revenue.manual_entry import show_manual_entry_view
+import streamlit as st
+from views.revenue import show_revenue_view
+from views.drivers import show_driver_view
+from views.cars import show_car_view
+from views.faq import show_faq_view
 
 def main():
     """Main application entry point."""
     st.set_page_config(
-        page_title="Revenue Data Management",
+        page_title="Revenue Management System",
         page_icon="💰",
         layout="centered"
     )
@@ -39,14 +19,23 @@ def main():
         st.title("Navigation")
         selected_page = st.radio(
             "Select a section:",
-            options=["Revenue Management", "FAQ"],
+            options=[
+                "Revenue Management",
+                "Driver Management",
+                "Car Management",
+                "FAQ"
+            ],
             index=0
         )
     
     # Display content based on selection
     if selected_page == "Revenue Management":
-        show_main_content()
-    else:
+        show_revenue_view()
+    elif selected_page == "Driver Management":
+        show_driver_view()
+    elif selected_page == "Car Management":
+        show_car_view()
+    else:  # FAQ
         show_faq_view()
 
 if __name__ == "__main__":

@@ -7,11 +7,17 @@ def show_csv_upload_view():
     """Display and handle the CSV upload form."""
     st.header("CSV File Upload")
     
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    uploaded_file = st.file_uploader("Choose a CSV file", type=["csv", "xlsx"])
     
     if uploaded_file is not None:
         try:
-            df = pd.read_csv(uploaded_file)
+            if uploaded_file.name.endswith('.xlsx'):
+                df = pd.read_excel(uploaded_file)
+            elif uploaded_file.name.endswith('.csv'):
+                df = pd.read_csv(uploaded_file)
+            else:
+                raise ValueError("Invalid file format")
+            
             st.write("Preview of uploaded data:")
             st.dataframe(df.head())
             
