@@ -4,72 +4,109 @@ from services.driver_service import DriverService
 
 def show_driver_form(existing_data: dict = None):
     """Display form for adding or editing a driver."""
+
+    if existing_data is None:
+        existing_data = dict()
+    
     with st.form("driver_form"):
-        name = st.text_input(
-            "Name", 
-            value=existing_data.get('name', '') if existing_data else ''
-        )
         
-        nif = st.text_input(
-            "NIF", 
-            value=existing_data.get('nif', '') if existing_data else '',
-            help="Tax identification number"
+        st.subheader("Informação Pessoal")
+
+        display_name = st.text_input(
+            "Display Name *", 
+            value=existing_data.get('display_name', ''),
+            help="Nome único para identificação do motorista"
         )
-        
-        base_salary = st.number_input(
-            "Base Salary",
-            min_value=0.0,
-            value=float(existing_data.get('base_salary', 0)) if existing_data else 0.0,
-            step=50.0,
-            format="%.2f"
-        )
-        
-        start_date = st.date_input(
-            "Start Date",
-            value=existing_data.get('start_date') if existing_data else datetime.now().date()
-        )
-        
-        # End date is optional
-        has_end_date = st.checkbox(
-            "Set End Date", 
-            value=True if existing_data and existing_data.get('end_date') else False
-        )
-        
-        end_date = None
-        if has_end_date:
-            end_date = st.date_input(
-                "End Date",
-                value=existing_data.get('end_date') if existing_data else datetime.now().date()
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            first_name =  st.text_input(
+                "First Name",
+                value=existing_data.get('first_name', '')
             )
 
-        submit_button = st.form_submit_button("Submit")
+        with col2:
+            last_name =  st.text_input(
+                "Last Name *",
+                value=existing_data.get('last_name', '')
+            )
+        
+        col1, col2 = st.columns(2)
+
+        with col1:   
+            nif = st.text_input(
+                "NIF", 
+                value=existing_data.get('nif', ''),
+                help="Tax identification number"
+            )
+
+        with col2:
+            niss = st.text_input(
+                "NISS",
+                value=existing_data.get('niss', ''),
+                help="Social security number"
+            )
+
+        # Address information
+        st.subheader("Morada")
+        address_line1 = st.text_input(
+            "Address Line 1 *",
+            value=existing_data.get('address_line1', '')
+        )
+        
+        address_line2 = st.text_input(
+            "Address Line 2",
+            value=existing_data.get('address_line2', '')
+        )
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            postal_code = st.text_input(
+                "Postal Code *",
+                value=existing_data.get('postal_code', ''),
+                placeholder="XXXX-XXX"
+            )
+        
+        with col2:
+            location = st.text_input(
+                "Location *",
+                value=existing_data.get('location', '')
+            )
+
+        # Form submission
+        st.markdown("**Campos obrigatórios*")
+        submit_button = st.form_submit_button("Submit", use_container_width=True)
 
         if submit_button:
-            if not name or not nif:
-                st.error("Name and NIF are required fields")
-                return False
-                
-            if has_end_date and end_date < start_date:
-                st.error("End date cannot be before start date")
+            
+            if not all([display_name]):
+                st.error("Todos os campos obrigatórios devem ser preenchidos")
                 return False
 
             driver_data = {
-                'name': name,
+                'display_name': display_name,
+                'first_name': first_name,
+                'last_name': last_name,
                 'nif': nif,
-                'base_salary': base_salary,
-                'start_date': start_date.strftime('%Y-%m-%d'),
-                'end_date': end_date.strftime('%Y-%m-%d') if end_date else None
+                'address_line1': address_line1,
+                'address_line2': address_line2,
+                'postal_code': postal_code,
+                'location': location
             }
 
             try:
-                if existing_data:
-                    if DriverService.update_driver(existing_data['id'], driver_data):
-                        st.success("Driver updated successfully!")
+                driver_id = existing_data.get('id', None)
+                if driver_id:
+                    if DriverService.update_driver(driver_id, driver_data):
+                        st.success("Motorista atualizado com sucesso!")
                         return True
                 else:
                     if DriverService.insert_driver(driver_data):
-                        st.success("Driver added successfully!")
+                        st.success("Motorista adicionado com sucesso!")
                         return True
+
             except Exception as e:
                 st.error(str(e))
                 return False
