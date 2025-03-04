@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from database.connection import get_db_connection, get_db_engine
 
 class DriverService:
@@ -50,6 +50,40 @@ class DriverService:
             return True
         except Exception as e:
             raise Exception(f"Error deleting driver: {str(e)}")
+        
+    @staticmethod
+    def get_active_drivers(start_date: str, end_date: str = None) -> List[Tuple[int, str]]:
+        """
+        Get all drivers active during the specified period using pandas.
+        
+        A driver is considered active if:
+        - Their start_date is before or on the period's end date
+        - Their end_date is either NULL or after the period's start date
+        
+        Returns:
+            List of tuples containing (id, name) for each active driver
+        """
+        # Using SQLAlchemy engine for pandas operations
+        engine = get_db_engine()
+        
+        # Construct the query using SQL for clarity
+        query = f"""
+            SELECT id, name 
+            FROM drivers 
+            WHERE start_date <= '{end_date or start_date}'
+            AND (end_date IS NULL OR end_date >= '{start_date}')
+            ORDER BY name
+        """
+        
+        try:
+            # Read the data into a DataFrame
+            df = pd.read_sql_query(query, engine)
+            
+            # Convert DataFrame to list of tuples for compatibility with existing code
+            return list(df.itertuples(index=False, name=None))
+        
+        except Exception as e:
+            raise Exception(f"Error fetching active drivers: {str(e)}")
 
     @staticmethod
     def load_drivers() -> pd.DataFrame:

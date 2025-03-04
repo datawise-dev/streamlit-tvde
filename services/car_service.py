@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from database.connection import get_db_connection, get_db_engine
 
 class CarService:
@@ -66,6 +66,31 @@ class CarService:
         """
         engine = get_db_engine()
         return pd.read_sql_query(query, engine)
+    
+    @staticmethod
+    def get_all_license_plates() -> List[Tuple]:
+        """
+        Get all available license plates from the cars table using pandas.
+        
+        Returns:
+            List of tuples containing (id, license_plate, brand, model) for each car
+        """
+        engine = get_db_engine()
+        query = """
+            SELECT id, license_plate, brand, model 
+            FROM cars 
+            ORDER BY license_plate
+        """
+        
+        try:
+            # Read the data into a DataFrame
+            df = pd.read_sql_query(query, engine)
+            
+            # Convert DataFrame to list of tuples for compatibility with existing code
+            return list(df.itertuples(index=False, name=None))
+        
+        except Exception as e:
+            raise Exception(f"Error fetching license plates: {str(e)}")
 
     @staticmethod
     def get_car(car_id: int) -> Dict:
