@@ -6,10 +6,10 @@ from utils.error_handlers import handle_streamlit_error
 @handle_streamlit_error()
 def show_data_view():
     """Display and handle the data view section."""
-    st.header("Registos de Receita")
+    st.subheader("Visualização de Dados")
     
     # Filter section
-    with st.form("filter_form"):
+    with st.form("revenue_view_form"):
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -38,7 +38,7 @@ def show_data_view():
             help="Filtrar por intervalo de datas"
         )
         
-        submit_button = st.form_submit_button("Filtrar", use_container_width=True)
+        submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
     
     # Load data
     with st.spinner("A carregar dados...", show_time=True):
@@ -75,6 +75,31 @@ def show_data_view():
             (filtered_df['end_date'] <= pd.to_datetime(date_range[1]))
         ]
 
+    # Show summary stats if results found
+    if not filtered_df.empty:
+        st.subheader("Resumo")
+        
+        # Calculate summary values
+        total_revenue = filtered_df['gross_revenue'].sum()
+        total_commission = (filtered_df['gross_revenue'] * filtered_df['commission_percentage'] / 100).sum()
+        net_revenue = total_revenue - total_commission + filtered_df['tip'].sum()
+        avg_commission = filtered_df['commission_percentage'].mean()
+        total_trips = filtered_df['num_travels'].sum()
+        total_km = filtered_df['num_kilometers'].sum()
+        
+        # Display in columns
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Receita Bruta", f"{total_revenue:.2f} €")
+            st.metric("Receita Líquida", f"{net_revenue:.2f} €")
+            
+        with col2:
+            st.metric("Comissão Total", f"{total_commission:.2f} €")
+            st.metric("Comissão Média", f"{avg_commission:.2f}%")
+            
+        with col3:
+            st.metric("Total Viagens", f"{int(total_trips)}")
+            st.metric("Total Km", f"{total_km:.1f} km")
     
     # Display records
     st.subheader(f"Registos ({len(filtered_df)} encontrados)")
@@ -85,21 +110,20 @@ def show_data_view():
     if selection:
         # Add selection column to dataframe
         filtered_df['select'] = False
-        selected_indices = []
         
         # Create column configuration for display
         column_config = {
             "select": st.column_config.CheckboxColumn("Selecionar"),
-            "start_date": st.column_config.DateColumn("Data Início"),
-            "end_date": st.column_config.DateColumn("Data Fim"),
-            "driver_name": st.column_config.TextColumn("Motorista"),
-            "license_plate": st.column_config.TextColumn("Matrícula"),
-            "platform": st.column_config.TextColumn("Plataforma"),
-            "gross_revenue": st.column_config.NumberColumn("Receita Bruta", format="%.2f €"),
-            "commission_percentage": st.column_config.NumberColumn("Comissão %", format="%.2f%%"),
-            "tip": st.column_config.NumberColumn("Gorjeta", format="%.2f €"),
-            "num_travels": st.column_config.NumberColumn("Viagens"),
-            "num_kilometers": st.column_config.NumberColumn("Km", format="%.1f")
+            "start_date": st.column_config.DateColumn("Data Início", format="DD/MM/YYYY", width="small"),
+            "end_date": st.column_config.DateColumn("Data Fim", format="DD/MM/YYYY", width="small"),
+            "driver_name": st.column_config.TextColumn("Motorista", width="medium"),
+            "license_plate": st.column_config.TextColumn("Matrícula", width="small"),
+            "platform": st.column_config.TextColumn("Plataforma", width="small"),
+            "gross_revenue": st.column_config.NumberColumn("Receita Bruta", format="%.2f €", width="small"),
+            "commission_percentage": st.column_config.NumberColumn("Comissão %", format="%.2f%%", width="small"),
+            "tip": st.column_config.NumberColumn("Gorjeta", format="%.2f €", width="small"),
+            "num_travels": st.column_config.NumberColumn("Viagens", width="small"),
+            "num_kilometers": st.column_config.NumberColumn("Km", format="%.1f", width="small")
         }
         
         # Show interactive dataframe with selection
@@ -132,47 +156,17 @@ def show_data_view():
         st.dataframe(
             filtered_df,
             column_config={
-                "start_date": st.column_config.DateColumn("Data Início"),
-                "end_date": st.column_config.DateColumn("Data Fim"),
-                "driver_name": st.column_config.TextColumn("Motorista"),
-                "license_plate": st.column_config.TextColumn("Matrícula"),
-                "platform": st.column_config.TextColumn("Plataforma"),
-                "gross_revenue": st.column_config.NumberColumn("Receita Bruta", format="%.2f €"),
-                "commission_percentage": st.column_config.NumberColumn("Comissão %", format="%.2f%%"),
-                "tip": st.column_config.NumberColumn("Gorjeta", format="%.2f €"),
-                "num_travels": st.column_config.NumberColumn("Viagens"),
-                "num_kilometers": st.column_config.NumberColumn("Km", format="%.1f")
+                "start_date": st.column_config.DateColumn("Data Início", format="DD/MM/YYYY", width="small"),
+                "end_date": st.column_config.DateColumn("Data Fim", format="DD/MM/YYYY", width="small"),
+                "driver_name": st.column_config.TextColumn("Motorista", width="medium"),
+                "license_plate": st.column_config.TextColumn("Matrícula", width="small"),
+                "platform": st.column_config.TextColumn("Plataforma", width="small"),
+                "gross_revenue": st.column_config.NumberColumn("Receita Bruta", format="%.2f €", width="small"),
+                "commission_percentage": st.column_config.NumberColumn("Comissão %", format="%.2f%%", width="small"),
+                "tip": st.column_config.NumberColumn("Gorjeta", format="%.2f €", width="small"),
+                "num_travels": st.column_config.NumberColumn("Viagens", width="small"),
+                "num_kilometers": st.column_config.NumberColumn("Km", format="%.1f", width="small")
             },
             hide_index=True,
             use_container_width=True
         )
-
-    
-    # Show summary stats
-    if not filtered_df.empty:
-        st.subheader("Resumo")
-        
-        # Calculate summary values
-        total_revenue = filtered_df['gross_revenue'].sum()
-        total_commission = (filtered_df['gross_revenue'] * filtered_df['commission_percentage'] / 100).sum()
-        net_revenue = total_revenue - total_commission + filtered_df['tip'].sum()
-        avg_commission = filtered_df['commission_percentage'].mean()
-        total_trips = filtered_df['num_travels'].sum()
-        total_km = filtered_df['num_kilometers'].sum()
-        
-        # Display in columns
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Receita Bruta", f"{total_revenue:.2f} €")
-            st.metric("Receita Líquida", f"{net_revenue:.2f} €")
-            
-        with col2:
-            st.metric("Comissão Total", f"{total_commission:.2f} €")
-            st.metric("Comissão Média", f"{avg_commission:.2f}%")
-            
-        with col3:
-            st.metric("Total Viagens", f"{int(total_trips)}")
-            st.metric("Total Km", f"{total_km:.1f} km")
-
-# Execute the function directly (no if __name__ == "__main__" check)
-show_data_view()
