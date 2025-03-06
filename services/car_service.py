@@ -11,12 +11,12 @@ class CarService:
                     cur.execute('''
                         INSERT INTO cars (
                             license_plate, brand, model, acquisition_cost,
-                            acquisition_date, category
-                        ) VALUES (%s, %s, %s, %s, %s, %s)
+                            acquisition_date, category, is_active
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
                     ''', (
                         data['license_plate'], data['brand'], data['model'],
                         data['acquisition_cost'], data['acquisition_date'],
-                        data['category']
+                        data['category'], data.get('is_active', True)
                     ))
                 conn.commit()
             return True
@@ -32,12 +32,12 @@ class CarService:
                         UPDATE cars 
                         SET license_plate = %s, brand = %s, model = %s,
                             acquisition_cost = %s, acquisition_date = %s,
-                            category = %s
+                            category = %s, is_active = %s
                         WHERE id = %s
                     ''', (
                         data['license_plate'], data['brand'], data['model'],
                         data['acquisition_cost'], data['acquisition_date'],
-                        data['category'], car_id
+                        data['category'], data.get('is_active', True), car_id
                     ))
                 conn.commit()
             return True
@@ -60,7 +60,8 @@ class CarService:
         query = """
             SELECT 
                 id, license_plate, brand, model, 
-                acquisition_cost, acquisition_date, category
+                acquisition_cost, acquisition_date, category, 
+                COALESCE(is_active, TRUE) as is_active
             FROM cars 
             ORDER BY acquisition_date DESC
         """
@@ -79,6 +80,7 @@ class CarService:
         query = """
             SELECT id, license_plate, brand, model 
             FROM cars 
+            WHERE COALESCE(is_active, TRUE) = TRUE
             ORDER BY license_plate
         """
         
@@ -98,7 +100,8 @@ class CarService:
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT id, license_plate, brand, model, 
-                           acquisition_cost, acquisition_date, category
+                           acquisition_cost, acquisition_date, category,
+                           COALESCE(is_active, TRUE) as is_active
                     FROM cars WHERE id = %s
                 """, (car_id,))
                 result = cur.fetchone()
@@ -110,6 +113,7 @@ class CarService:
                         'model': result[3],
                         'acquisition_cost': result[4],
                         'acquisition_date': result[5],
-                        'category': result[6]
+                        'category': result[6],
+                        'is_active': result[7]
                     }
                 return None

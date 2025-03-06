@@ -104,4 +104,5 @@ st.dataframe(
     hide_index=True
 )
 
-
+# Button to add a new car
+st.page_link("views/driver.py", label="Adicionar Novo Motorista", icon="➕")

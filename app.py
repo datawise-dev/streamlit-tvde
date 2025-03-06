@@ -13,7 +13,8 @@ def main():
     page_revenue = st.Page("views/revenue/__init__.py", title="Revenue Management", url_path="revenue")
     page_drivers = st.Page("views/drivers.py", title="Driver Management", url_path="drivers")
     page_driver  = st.Page("views/driver.py", title="Add Driver", url_path="driver")
-    page_cars    = st.Page("views/cars/__init__.py", title="Car Management", url_path="cars")
+    page_cars    = st.Page("views/cars.py", title="Car Management", url_path="cars")
+    page_car     = st.Page("views/car.py", title="Add Car", url_path="car")
     page_faqs    = st.Page("views/faq.py", title="FAQs")
     
     # Use the container to display content
@@ -22,8 +23,9 @@ def main():
         # page_revenue,
         page_driver,
         page_drivers,
-        # page_cars,
-        # page_faqs
+        page_car,
+        page_cars,
+        page_faqs
     ])
 
     pg.run()
