@@ -4,6 +4,7 @@ from psycopg2.extras import execute_values
 from database.connection import get_db_connection, get_db_engine
 from services.base_service import BaseService
 from utils.validators import validate_data, get_revenue_validators
+from utils.error_handlers import handle_service_error
 
 class RevenueService(BaseService):
     """
@@ -30,6 +31,7 @@ class RevenueService(BaseService):
         return len(errors) == 0, errors
     
     @classmethod
+    @handle_service_error("Erro ao inserir dados de receita")
     def insert_revenue_data(cls, data: Dict) -> bool:
         """
         Insert single revenue record into database.
@@ -53,6 +55,7 @@ class RevenueService(BaseService):
         return cls.insert(data)
 
     @classmethod
+    @handle_service_error("Erro ao inserir múltiplos dados de receita")
     def bulk_insert_revenue_data(cls, data_list: List[Dict]) -> bool:
         """
         Insert multiple revenue records into database.
@@ -95,6 +98,7 @@ class RevenueService(BaseService):
             raise Exception(f"Error bulk inserting data: {str(e)}")
 
     @classmethod
+    @handle_service_error("Erro ao carregar dados de receita")
     def load_data(cls) -> pd.DataFrame:
         """Load all data from database."""
         query = f"""
@@ -118,6 +122,7 @@ class RevenueService(BaseService):
         return pd.read_sql_query(query, engine)
 
     @classmethod
+    @handle_service_error("Erro ao eliminar registos")
     def delete_records(cls, ids: List[int]) -> bool:
         """Delete specified records from database."""
         return cls.delete_many(ids)
