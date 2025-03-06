@@ -90,35 +90,6 @@ def show_car_list():
                                 st.rerun()
                         except Exception as e:
                             st.error(f"Error deleting car: {str(e)}")
-
-            # Display summary statistics
-            st.subheader("Fleet Summary")
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                total_value = filtered_df['acquisition_cost'].sum()
-                avg_value = filtered_df['acquisition_cost'].mean()
-                st.metric("Total Fleet Value", f"${total_value:,.2f}")
-                st.metric("Average Vehicle Value", f"${avg_value:,.2f}")
-            
-            with col2:
-                total_vehicles = len(filtered_df)
-                vehicles_by_category = filtered_df['category'].value_counts()
-                st.metric("Total Vehicles", f"{total_vehicles}")
-                for category in sorted(vehicles_by_category.index):
-                    st.metric(f"{category} Vehicles", f"{vehicles_by_category[category]}")
-            
-            with col3:
-                avg_age = (
-                    datetime.now().date() - 
-                    pd.to_datetime(filtered_df['acquisition_date']).dt.date
-                ).mean().days / 365.25
-                oldest_car = (
-                    datetime.now().date() - 
-                    pd.to_datetime(filtered_df['acquisition_date']).dt.date
-                ).max().days / 365.25
-                st.metric("Average Fleet Age", f"{avg_age:.1f} years")
-                st.metric("Oldest Vehicle Age", f"{oldest_car:.1f} years")
                 
         else:
             st.info("No cars currently registered in the system.")
