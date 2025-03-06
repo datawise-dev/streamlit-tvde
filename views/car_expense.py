@@ -194,5 +194,4 @@ def main():
     st.page_link("views/car_expenses.py", label="Back to Car Expenses List", icon="⬅️")
 
 # Execute the main function
-if __name__ == "__main__":
-    main()
+main()

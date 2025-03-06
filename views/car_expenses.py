@@ -160,5 +160,4 @@ def show_car_expenses_view():
     st.page_link("views/car_expense.py", label="Add New Car Expense", icon="➕")
 
 # Execute the function if this file is run directly
-if __name__ == "__main__":
-    show_car_expenses_view()
+show_car_expenses_view()
