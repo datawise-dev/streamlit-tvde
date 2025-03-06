@@ -2,11 +2,10 @@ import streamlit as st
 from services.revenue_service import RevenueService
 from services.driver_service import DriverService
 from services.car_service import CarService
-from utils.data_processing import validate_revenue_data
 from datetime import datetime
 
 def show_revenue_form():
-    """Display and handle the manual entry form."""
+    """Display and handle the manual entry form with enhanced validation."""
     
     # Create a form for data entry
     with st.form("revenue_entry_form"):
@@ -127,15 +126,6 @@ def show_revenue_form():
         submit_button = st.form_submit_button("Submit")
         
         if submit_button:
-            # Basic validation
-            if not driver_name or not license_plate:
-                st.error("Driver name and license plate are required fields")
-                return
-            
-            if end_date < start_date:
-                st.error("End date cannot be before start date")
-                return
-            
             # Prepare data dictionary
             data = {
                 'start_date': start_date.strftime('%Y-%m-%d'),
@@ -150,10 +140,12 @@ def show_revenue_form():
                 'num_kilometers': num_kms
             }
             
-            # Additional validation through utility function
-            is_valid, error_message = validate_revenue_data(data)
+            # Validate using the enhanced validation system
+            is_valid, errors = RevenueService.validate(data)
             if not is_valid:
-                st.error(error_message)
+                # Display all validation errors at once
+                for error in errors:
+                    st.error(error)
                 return
             
             # Attempt to insert data

@@ -1,5 +1,6 @@
 import re
-from typing import Dict, List
+from typing import Dict, List, Tuple
+from utils.validators import validate_data, get_revenue_validators
 
 def normalize_column_name(column_name: str) -> str:
     """Normalize column names by converting to lowercase and removing special characters."""
@@ -26,12 +27,23 @@ def map_columns(df_columns: List[str]) -> Dict[str, str]:
     
     return col_mapping
 
-def validate_revenue_data(data: Dict) -> tuple[bool, str]:
-    """Validate revenue data before insertion."""
-    if not data['driver_name'] or not data['license_plate']:
-        return False, "Driver name and license plate are required"
+def validate_revenue_data(data: Dict) -> Tuple[bool, str]:
+    """
+    Validate revenue data before insertion using the new validator system.
     
-    if data['end_date'] < data['start_date']:
-        return False, "End date cannot be before start date"
+    Args:
+        data: Dictionary containing revenue data
         
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    # Get the validators for revenue data
+    field_validators, cross_validators = get_revenue_validators()
+    
+    # Run validation
+    errors = validate_data(data, field_validators, cross_validators)
+    
+    if errors:
+        return False, ", ".join(errors)
+    
     return True, ""
