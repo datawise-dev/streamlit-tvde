@@ -1,9 +1,12 @@
 import streamlit as st
 import time
-from datetime import datetime, date
+from datetime import date
 from services.hr_expense_service import HRExpenseService
 from services.driver_service import DriverService
+from utils.error_handlers import handle_streamlit_error
 
+@st.dialog("Delete HR Expense")
+@handle_streamlit_error()
 def delete_expense(expense_id):
     """Dialog to confirm and delete an expense"""
     if st.button("Confirmar Eliminação"):
@@ -13,6 +16,7 @@ def delete_expense(expense_id):
         time.sleep(2)
         st.page_link("views/hr_expenses.py")
 
+@handle_streamlit_error()
 def expense_form(existing_data=None):
     """Display form for adding or editing HR expenses."""
     # Default values for new records
@@ -185,78 +189,81 @@ def expense_form(existing_data=None):
 
 
 # Main page content
-st.title("Gestão de Despesas RH")
+@handle_streamlit_error()
+def main():
+    # Main page content
+    st.title("Gestão de Despesas RH")
 
-# Set page title based on mode
-existing_data = None
-if "id" in st.query_params:
+    # Set page title based on mode
+    existing_data = None
+    if "id" in st.query_params:
+        try:
+            expense_id = int(st.query_params["id"])
+            # Get expense data
+            existing_data = HRExpenseService.get_expense(expense_id)
+            if not existing_data:
+                st.error("Despesa não encontrada.")
+            else:
+                st.subheader(f"Editar Despesa: {existing_data.get('driver_name', '')}")
+                
+                # Delete button
+                if st.button("Eliminar Esta Despesa"):
+                    st.warning("Tem a certeza que deseja eliminar esta despesa?")
+                    delete_expense(expense_id)
+        except Exception as e:
+            st.error(f"Erro ao carregar informação da despesa: {str(e)}")
+            existing_data = None
+    else:
+        st.subheader("Adicionar Nova Despesa")
+
+    # Show the form
     try:
-        expense_id = int(st.query_params["id"])
-        # Get expense data
-        existing_data = HRExpenseService.get_expense(expense_id)
-        if not existing_data:
-            st.error("Despesa não encontrada.")
-        else:
-            st.subheader(f"Editar Despesa: {existing_data.get('driver_name', '')}")
-            
-            # Delete button
-            if st.button("Eliminar Esta Despesa"):
-                st.warning("Tem a certeza que deseja eliminar esta despesa?")
-                delete_expense(expense_id)
+        submit_button, expense_data = expense_form(existing_data)
     except Exception as e:
-        st.error(f"Erro ao carregar informação da despesa: {str(e)}")
-        existing_data = None
-else:
-    st.subheader("Adicionar Nova Despesa")
-
-# Show the form
-try:
-    submit_button, expense_data = expense_form(existing_data)
-except Exception as e:
-    st.error(f"Erro ao renderizar o formulário: {str(e)}")
-    st.stop()
-
-# Handle form submission
-if submit_button:
-    # Required fields
-    required_fields = ["driver_id", "start_date", "end_date", "payment_date", 
-                      "base_salary", "working_days", "meal_allowance_per_day"]
-
-    # Convert dates to strings
-    for field in ['start_date', 'end_date', 'payment_date']:
-        if isinstance(expense_data.get(field), date):
-            expense_data[field] = expense_data[field].strftime('%Y-%m-%d')
-
-    # Validate required fields
-    missing_fields = []
-    for field in required_fields:
-        if not expense_data.get(field):
-            missing_fields.append(field)
-            
-    if missing_fields:
-        st.error(f"Campos obrigatórios em falta: {', '.join(missing_fields)}")
-        st.stop()
-    
-    # Validate dates
-    if expense_data['end_date'] < expense_data['start_date']:
-        st.error("A data de fim não pode ser anterior à data de início")
+        st.error(f"Erro ao renderizar o formulário: {str(e)}")
         st.stop()
 
-    # Update or insert
-    try:
-        if existing_data and 'id' in existing_data:
-            with st.spinner("A atualizar dados..."):
-                HRExpenseService.update_expense(existing_data['id'], expense_data)
-            st.success("Despesa atualizada com sucesso!")
-            st.page_link("views/hr_expenses.py", label="Voltar à lista de Despesas")
-        else:
-            with st.spinner("A adicionar dados..."):
-                HRExpenseService.insert_expense(expense_data)
-            st.success("Despesa adicionada com sucesso!")
-            time.sleep(2)
-            st.rerun()
-    except Exception as e:
-        st.error(f"Erro ao guardar dados: {str(e)}")
+    # Handle form submission
+    if submit_button:
+        # Required fields
+        required_fields = ["driver_id", "start_date", "end_date", "payment_date", 
+                        "base_salary", "working_days", "meal_allowance_per_day"]
 
-# Link to return to list
-st.page_link("views/hr_expenses.py", label="Voltar à lista de Despesas", icon="⬅️")
+        # Convert dates to strings
+        for field in ['start_date', 'end_date', 'payment_date']:
+            if isinstance(expense_data.get(field), date):
+                expense_data[field] = expense_data[field].strftime('%Y-%m-%d')
+
+        # Validate required fields
+        missing_fields = []
+        for field in required_fields:
+            if not expense_data.get(field):
+                missing_fields.append(field)
+                
+        if missing_fields:
+            st.error(f"Campos obrigatórios em falta: {', '.join(missing_fields)}")
+            st.stop()
+        
+        # Validate dates
+        if expense_data['end_date'] < expense_data['start_date']:
+            st.error("A data de fim não pode ser anterior à data de início")
+            st.stop()
+
+        # Update or insert
+        try:
+            if existing_data and 'id' in existing_data:
+                with st.spinner("A atualizar dados..."):
+                    HRExpenseService.update_expense(existing_data['id'], expense_data)
+                st.success("Despesa atualizada com sucesso!")
+                st.page_link("views/hr_expenses.py", label="Voltar à lista de Despesas")
+            else:
+                with st.spinner("A adicionar dados..."):
+                    HRExpenseService.insert_expense(expense_data)
+                st.success("Despesa adicionada com sucesso!")
+                time.sleep(2)
+                st.rerun()
+        except Exception as e:
+            st.error(f"Erro ao guardar dados: {str(e)}")
+
+    # Link to return to list
+    st.page_link("views/hr_expenses.py", label="Voltar à lista de Despesas", icon="⬅️")
