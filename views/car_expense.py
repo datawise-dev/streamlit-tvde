@@ -29,46 +29,51 @@ def car_expense_form(existing_data=None):
     with st.form("car_expense_form", clear_on_submit=True):
         st.subheader("Expense Information")
 
-        # Car selection
-        try:
-            cars = CarService.get_all_license_plates()
-            if not cars:
-                st.warning("No cars available in the system")
-                car_options = {}
-            else:
-                # Create a dictionary for car selection
-                car_options = {
-                    car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars
-                }
-            
-            default_index = 0
-            if existing_data.get('car_id') in car_options:
-                default_index = list(car_options.keys()).index(existing_data.get('car_id'))
-            
-            car_id = st.selectbox(
-                "Car *",
-                options=list(car_options.keys()) if car_options else [],
-                format_func=lambda x: car_options.get(x, "Select a car"),
-                index=default_index,
-                help="Select the car for this expense"
-            )
-            data["car_id"] = car_id
-            
-        except Exception as e:
-            st.error(f"Error loading cars: {str(e)}")
-
-        # Expense type selection
-        expense_type_options = ["Credit", "Gasoline", "Tolls", "Repairs", "Washing"]
-        default_type_index = 0
-        if existing_data.get('expense_type') in expense_type_options:
-            default_type_index = expense_type_options.index(existing_data.get('expense_type'))
+        col1, col2 = st.columns(2)
         
-        data["expense_type"] = st.selectbox(
-            "Expense Type *",
-            options=expense_type_options,
-            index=default_type_index,
-            help="Type of car expense"
-        )
+        with col1:
+            # Car selection
+            try:
+                cars = CarService.get_all_license_plates()
+                if not cars:
+                    st.warning("No cars available in the system")
+                    car_options = {}
+                else:
+                    # Create a dictionary for car selection
+                    car_options = {
+                        car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars
+                    }
+                
+                default_index = 0
+                if existing_data.get('car_id') in car_options:
+                    default_index = list(car_options.keys()).index(existing_data.get('car_id'))
+                
+                car_id = st.selectbox(
+                    "Car *",
+                    options=list(car_options.keys()) if car_options else [],
+                    format_func=lambda x: car_options.get(x, "Select a car"),
+                    index=default_index,
+                    help="Select the car for this expense"
+                )
+                data["car_id"] = car_id
+                
+            except Exception as e:
+                st.error(f"Error loading cars: {str(e)}")
+
+        with col2:
+
+            # Expense type selection
+            expense_type_options = ["Credit", "Gasoline", "Tolls", "Repairs", "Washing"]
+            default_type_index = 0
+            if existing_data.get('expense_type') in expense_type_options:
+                default_type_index = expense_type_options.index(existing_data.get('expense_type'))
+            
+            data["expense_type"] = st.selectbox(
+                "Expense Type *",
+                options=expense_type_options,
+                index=default_type_index,
+                help="Type of car expense"
+            )
 
         # Date information
         col1, col2 = st.columns(2)
