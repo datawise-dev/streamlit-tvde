@@ -163,7 +163,7 @@ def main():
                 st.success("Motorista atualizado com sucesso!")
                 # Adicionar botão para voltar à lista
                 # st.link_button("Voltar à Lista", "/drivers")
-                st.page_link("views/drivers.py", label="Voltar à lista de Motoristas")
+                
             except Exception as e:
                 st.error("Não foi possível atualizar o motorista.")
                 st.error(str(e))
@@ -178,6 +178,8 @@ def main():
             except Exception as e:
                 st.error("Não foi possível adicionar o motorista.")
                 st.error(str(e))
+
+    st.page_link("views/drivers.py", label="Voltar à lista de Motoristas", icon="⬅️")
 
 # Execute the main function
 main()
