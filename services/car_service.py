@@ -1,62 +1,37 @@
 import pandas as pd
 from typing import Dict, List, Optional, Tuple
 from database.connection import get_db_connection, get_db_engine
+from services.base_service import BaseService
 
-class CarService:
-    @staticmethod
-    def insert_car(data: Dict) -> bool:
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute('''
-                        INSERT INTO cars (
-                            license_plate, brand, model, acquisition_cost,
-                            acquisition_date, category, is_active
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    ''', (
-                        data['license_plate'], data['brand'], data['model'],
-                        data['acquisition_cost'], data['acquisition_date'],
-                        data['category'], data.get('is_active', True)
-                    ))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error inserting car: {str(e)}")
+class CarService(BaseService):
+    """
+    Service for managing car data.
+    Inherits common CRUD operations from BaseService.
+    """
+    table_name = 'cars'
+    primary_key = 'id'
+    default_order_by = 'license_plate'
+    
+    @classmethod
+    def insert_car(cls, data: Dict) -> bool:
+        """Insert a new car record."""
+        # We could add custom validation here if needed
+        return cls.insert(data)
 
-    @staticmethod
-    def update_car(car_id: int, data: Dict) -> bool:
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute('''
-                        UPDATE cars 
-                        SET license_plate = %s, brand = %s, model = %s,
-                            acquisition_cost = %s, acquisition_date = %s,
-                            category = %s, is_active = %s
-                        WHERE id = %s
-                    ''', (
-                        data['license_plate'], data['brand'], data['model'],
-                        data['acquisition_cost'], data['acquisition_date'],
-                        data['category'], data.get('is_active', True), car_id
-                    ))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error updating car: {str(e)}")
+    @classmethod
+    def update_car(cls, car_id: int, data: Dict) -> bool:
+        """Update an existing car record."""
+        # We could add custom validation here if needed
+        return cls.update(car_id, data)
 
-    @staticmethod
-    def delete_car(car_id: int) -> bool:
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("DELETE FROM cars WHERE id = %s", (car_id,))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error deleting car: {str(e)}")
+    @classmethod
+    def delete_car(cls, car_id: int) -> bool:
+        """Delete a car record."""
+        return cls.delete(car_id)
 
-    @staticmethod
-    def load_cars() -> pd.DataFrame:
+    @classmethod
+    def load_cars(cls) -> pd.DataFrame:
+        """Load all cars with enhanced information."""
         query = """
             SELECT 
                 id, license_plate, brand, model, 
@@ -68,10 +43,10 @@ class CarService:
         engine = get_db_engine()
         return pd.read_sql_query(query, engine)
     
-    @staticmethod
-    def get_all_license_plates() -> List[Tuple]:
+    @classmethod
+    def get_all_license_plates(cls) -> List[Tuple]:
         """
-        Get all available license plates from the cars table using pandas.
+        Get all available license plates from the cars table.
         
         Returns:
             List of tuples containing (id, license_plate, brand, model) for each car
@@ -94,26 +69,7 @@ class CarService:
         except Exception as e:
             raise Exception(f"Error fetching license plates: {str(e)}")
 
-    @staticmethod
-    def get_car(car_id: int) -> Dict:
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT id, license_plate, brand, model, 
-                           acquisition_cost, acquisition_date, category,
-                           COALESCE(is_active, TRUE) as is_active
-                    FROM cars WHERE id = %s
-                """, (car_id,))
-                result = cur.fetchone()
-                if result:
-                    return {
-                        'id': result[0],
-                        'license_plate': result[1],
-                        'brand': result[2],
-                        'model': result[3],
-                        'acquisition_cost': result[4],
-                        'acquisition_date': result[5],
-                        'category': result[6],
-                        'is_active': result[7]
-                    }
-                return None
+    @classmethod
+    def get_car(cls, car_id: int) -> Dict:
+        """Get a car's complete information by ID."""
+        return cls.get(car_id)

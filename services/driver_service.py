@@ -1,10 +1,19 @@
 import pandas as pd
 from typing import Dict, List, Optional, Tuple
 from database.connection import get_db_connection, get_db_engine
+from services.base_service import BaseService
 
-class DriverService:
-    @staticmethod
-    def insert_driver(data: Dict) -> bool:
+class DriverService(BaseService):
+    """
+    Service for managing driver data.
+    Inherits common CRUD operations from BaseService.
+    """
+    table_name = 'drivers'
+    primary_key = 'id'
+    default_order_by = 'display_name'
+    
+    @classmethod
+    def insert_driver(cls, data: Dict) -> bool:
         """
         Insert a new driver with enhanced information.
         Validates uniqueness constraints before insertion.
@@ -20,25 +29,15 @@ class DriverService:
                     result = cur.fetchone()
                     if result:
                         raise Exception("A driver with the same Display Name or NIF already exists")
+            
+            # If validation passes, use the base class insert method
+            return cls.insert(data)
                     
-                    # If validation passes, insert the new driver
-                    cur.execute('''
-                        INSERT INTO drivers (
-                            display_name, first_name, last_name, nif, 
-                            address_line1, address_line2, postal_code, location
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (
-                        data['display_name'], data['first_name'], data['last_name'], data['nif'],
-                        data['address_line1'], data.get('address_line2'), data['postal_code'], 
-                        data['location']
-                    ))
-                conn.commit()
-            return True
         except Exception as e:
             raise Exception(f"Error inserting driver: {str(e)}")
 
-    @staticmethod
-    def update_driver(driver_id: int, data: Dict) -> bool:
+    @classmethod
+    def update_driver(cls, driver_id: int, data: Dict) -> bool:
         """
         Update driver information with enhanced fields.
         Validates uniqueness constraints before update.
@@ -54,38 +53,21 @@ class DriverService:
                     result = cur.fetchone()
                     if result:
                         raise Exception("Another driver with the same Display Name or NIF already exists")
+            
+            # If validation passes, use the base class update method
+            return cls.update(driver_id, data)
                     
-                    # If validation passes, update the driver
-                    cur.execute('''
-                        UPDATE drivers 
-                        SET display_name = %s, first_name = %s, last_name = %s, nif = %s,
-                            address_line1 = %s, address_line2 = %s, postal_code = %s, location = %s,
-                            is_active = %s
-                        WHERE id = %s
-                    ''', (
-                        data['display_name'], data['first_name'], data['last_name'], data['nif'],
-                        data['address_line1'], data.get('address_line2'), data['postal_code'], 
-                        data['location'], data.get('is_active', True), driver_id
-                    ))
-                conn.commit()
-            return True
         except Exception as e:
             raise Exception(f"Error updating driver: {str(e)}")
 
-    @staticmethod
-    def delete_driver(driver_id: int) -> bool:
+    @classmethod
+    def delete_driver(cls, driver_id: int) -> bool:
         """Delete a driver by ID."""
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("DELETE FROM drivers WHERE id = %s", (driver_id,))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error deleting driver: {str(e)}")
+        # Use the base class delete method
+        return cls.delete(driver_id)
         
-    @staticmethod
-    def get_all_drivers() -> List[Tuple[int, str]]:
+    @classmethod
+    def get_all_drivers(cls) -> List[Tuple[int, str]]:
         """
         Get all drivers using pandas.
         
@@ -112,8 +94,8 @@ class DriverService:
         except Exception as e:
             raise Exception(f"Error fetching drivers: {str(e)}")
 
-    @staticmethod
-    def load_drivers() -> pd.DataFrame:
+    @classmethod
+    def load_drivers(cls) -> pd.DataFrame:
         """Load all drivers with enhanced information."""
         query = """
             SELECT 
@@ -126,31 +108,34 @@ class DriverService:
         engine = get_db_engine()
         return pd.read_sql_query(query, engine)
 
-    @staticmethod
-    def get_driver(driver_id: int) -> Dict:
+    @classmethod
+    def get_driver(cls, driver_id: int) -> Dict:
         """Get a driver's complete information by ID."""
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    SELECT 
-                        id, display_name, first_name, last_name, nif, 
-                        address_line1, address_line2, postal_code, location,
-                        is_active
-                    FROM drivers 
-                    WHERE id = %s
-                """, (driver_id,))
-                result = cur.fetchone()
-                if result:
-                    return {
-                        'id': result[0],
-                        'display_name': result[1],
-                        'first_name': result[2],
-                        'last_name': result[3],
-                        'nif': result[4],
-                        'address_line1': result[5],
-                        'address_line2': result[6],
-                        'postal_code': result[7],
-                        'location': result[8],
-                        'is_active': result[9]
-                    }
-                return None
+        # Use the base class get method
+        return cls.get(driver_id)
+        
+    @classmethod
+    def get_active_drivers(cls, start_date: str, end_date: str) -> List[Tuple]:
+        """
+        Get all active drivers for a specific date range.
+        
+        Args:
+            start_date: Start date in format 'YYYY-MM-DD'
+            end_date: End date in format 'YYYY-MM-DD'
+            
+        Returns:
+            List of tuples containing (id, display_name) for each active driver
+        """
+        # Custom implementation for specific business logic
+        query = """
+            SELECT id, display_name 
+            FROM drivers 
+            WHERE is_active = TRUE
+            ORDER BY display_name
+        """
+        
+        engine = get_db_engine()
+        df = pd.read_sql_query(query, engine)
+        
+        # Convert DataFrame to list of tuples
+        return list(df.itertuples(index=False, name=None))

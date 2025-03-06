@@ -1,76 +1,48 @@
 import pandas as pd
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from database.connection import get_db_connection, get_db_engine
 from datetime import datetime, date
 import calendar
 from dateutil.relativedelta import relativedelta
+from services.base_service import BaseService
 
-class HRExpenseService:
-    @staticmethod
-    def insert_expense(data: Dict) -> bool:
+class HRExpenseService(BaseService):
+    """
+    Service for managing HR expenses.
+    Inherits common CRUD operations from BaseService.
+    """
+    table_name = 'hr_expenses'
+    primary_key = 'id'
+    default_order_by = 'payment_date DESC'
+    
+    @classmethod
+    def insert_expense(cls, data: Dict) -> int:
         """Insert a new HR expense record."""
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute('''
-                        INSERT INTO hr_expenses (
-                            driver_id, start_date, end_date, payment_date,
-                            base_salary, working_days, meal_allowance_per_day, 
-                            other_benefits, notes
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        RETURNING id
-                    ''', (
-                        data['driver_id'], data['start_date'], data['end_date'],
-                        data['payment_date'], data['base_salary'], data['working_days'],
-                        data['meal_allowance_per_day'],
-                        data.get('other_benefits', 0), data.get('notes', '')
-                    ))
-                    result = cur.fetchone()
-                conn.commit()
-            return result[0] if result else None
-        except Exception as e:
-            raise Exception(f"Error inserting HR expense: {str(e)}")
+        # Use the base class insert method
+        return cls.insert(data)
     
-    @staticmethod
-    def update_expense(expense_id: int, data: Dict) -> bool:
+    @classmethod
+    def update_expense(cls, expense_id: int, data: Dict) -> bool:
         """Update an existing HR expense record."""
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute('''
-                        UPDATE hr_expenses 
-                        SET driver_id = %s, start_date = %s, end_date = %s, 
-                            payment_date = %s, base_salary = %s, working_days = %s,
-                            meal_allowance_per_day = %s, other_benefits = %s, 
-                            notes = %s, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = %s
-                    ''', (
-                        data['driver_id'], data['start_date'], data['end_date'],
-                        data['payment_date'], data['base_salary'], data['working_days'],
-                        data['meal_allowance_per_day'],
-                        data.get('other_benefits', 0), data.get('notes', ''),
-                        expense_id
-                    ))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error updating HR expense: {str(e)}")
+        # Add updated_at field to the data
+        data_copy = data.copy()
+        data_copy['updated_at'] = 'CURRENT_TIMESTAMP'
+        
+        # Use the base class update method
+        return cls.update(expense_id, data_copy)
     
-    @staticmethod
-    def delete_expense(expense_id: int) -> bool:
+    @classmethod
+    def delete_expense(cls, expense_id: int) -> bool:
         """Delete an HR expense record."""
-        try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("DELETE FROM hr_expenses WHERE id = %s", (expense_id,))
-                conn.commit()
-            return True
-        except Exception as e:
-            raise Exception(f"Error deleting HR expense: {str(e)}")
+        # Use the base class delete method
+        return cls.delete(expense_id)
     
-    @staticmethod
-    def get_expense(expense_id: int) -> Dict:
-        """Get a specific HR expense record by ID."""
+    @classmethod
+    def get_expense(cls, expense_id: int) -> Dict:
+        """
+        Get a specific HR expense record by ID, including driver name.
+        This method needs custom implementation due to the JOIN with drivers table.
+        """
         try:
             with get_db_connection() as conn:
                 with conn.cursor() as cur:
@@ -103,9 +75,12 @@ class HRExpenseService:
         except Exception as e:
             raise Exception(f"Error getting HR expense: {str(e)}")
     
-    @staticmethod
-    def load_expenses() -> pd.DataFrame:
-        """Load all HR expense records with driver names."""
+    @classmethod
+    def load_expenses(cls) -> pd.DataFrame:
+        """
+        Load all HR expense records with driver names.
+        Custom implementation needed due to JOIN and calculations.
+        """
         query = """
             SELECT 
                 e.id, e.driver_id, e.start_date, e.end_date, e.payment_date,
@@ -119,16 +94,25 @@ class HRExpenseService:
         engine = get_db_engine()
         df = pd.read_sql_query(query, engine)
         
-        # Calcular o subsídio de alimentação total
+        # Calculate meal allowance total and total expense
         if not df.empty:
             df['meal_allowance_total'] = (df['working_days'] * df['meal_allowance_per_day']).round(2)
             df['total_expense'] = (df['base_salary'] + df['meal_allowance_total'] + df['other_benefits']).round(2)
             
         return df
     
-    @staticmethod
-    def get_working_days(year: int, month: int) -> int:
-        """Calculate the number of working days in a month (excluding weekends)."""
+    @classmethod
+    def get_working_days(cls, year: int, month: int) -> int:
+        """
+        Calculate the number of working days in a month (excluding weekends).
+        
+        Args:
+            year: The year to calculate for
+            month: The month to calculate for (1-12)
+            
+        Returns:
+            Number of working days in the month
+        """
         # Get the number of days in the month
         num_days = calendar.monthrange(year, month)[1]
         
@@ -141,9 +125,14 @@ class HRExpenseService:
                 
         return working_days
     
-    @staticmethod
-    def get_next_month_dates() -> tuple:
-        """Get default start and end dates for the next month."""
+    @classmethod
+    def get_next_month_dates(cls) -> Tuple[date, date]:
+        """
+        Get default start and end dates for the next month.
+        
+        Returns:
+            Tuple containing (first_day_of_next_month, last_day_of_next_month)
+        """
         today = date.today()
         first_day_next_month = date(today.year, today.month, 1) + relativedelta(months=1)
         last_day_next_month = date(
