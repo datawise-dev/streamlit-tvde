@@ -24,6 +24,10 @@ def create_custom_sidebar():
         st.subheader("🏠 Principal")
         st.page_link("views/home.py", label="Página Inicial")
         
+        # Revenue section
+        st.subheader("💰 Receitas")
+        st.page_link("views/revenue/__init__.py", label="Receitas")
+        
         # Management section
         st.subheader("📋 Gestão")
         st.page_link("views/drivers.py", label="🧑‍💼 Motoristas")
