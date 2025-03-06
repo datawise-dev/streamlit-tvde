@@ -394,3 +394,37 @@ def get_hr_expense_validators() -> Tuple[List[FieldValidator], List[Callable]]:
     ]
     
     return field_validators, cross_validators
+
+
+def get_car_expense_validators() -> Tuple[List[FieldValidator], List[Callable]]:
+    """
+    Get validators for car expense data.
+    
+    Returns:
+        Tuple of (field_validators, cross_validators)
+    """
+    field_validators = [
+        ('car_id', [validate_required, validate_numeric]),
+        ('expense_type', [validate_required]),
+        ('start_date', [validate_required, validate_date_format]),
+        ('end_date', [validate_date_format]),  # Not required
+        ('amount', [validate_required, validate_numeric, validate_min_value(0)]),
+        ('description', [validate_max_length(500)])  # Not required, but with max length
+    ]
+    
+    # Cross-field validators
+    cross_validators = []
+    
+    # Add date range validator only for credit expenses
+    def validate_credit_date_range(data: Dict) -> ValidationResult:
+        if data.get('expense_type') == 'Credit' and data.get('end_date') is None:
+            return False, "End date is required for Credit expenses"
+        return True, ""
+    
+    # Add validator for date range
+    cross_validators.append(validate_date_range('start_date', 'end_date'))
+    
+    # Add validator for credit expense date requirements
+    cross_validators.append(validate_credit_date_range)
+    
+    return field_validators, cross_validators

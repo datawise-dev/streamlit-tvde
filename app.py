@@ -32,6 +32,8 @@ def main():
     page_car     = st.Page("views/car.py", title="Add Car", url_path="car")
     page_hr_expenses = st.Page("views/hr_expenses.py", title="HR Expenses", url_path="hr_expenses")
     page_hr_expense  = st.Page("views/hr_expense.py", title="Add HR Expense", url_path="hr_expense")
+    page_car_expenses = st.Page("views/car_expenses.py", title="Car Expenses", url_path="car_expenses")
+    page_car_expense  = st.Page("views/car_expense.py", title="Add Car Expense", url_path="car_expense")
     page_faqs    = st.Page("views/faq.py", title="FAQs")
     
     # Use the container to display content
