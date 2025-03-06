@@ -14,6 +14,31 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# Função para criar a barra lateral personalizada
+def create_custom_sidebar():
+    """Create a custom sidebar navigation."""
+    with st.sidebar:
+        st.title("Menu de Navegação")
+        
+        # Main pages
+        st.subheader("🏠 Principal")
+        st.page_link("views/home.py", label="Página Inicial")
+        
+        # Management section
+        st.subheader("📋 Gestão")
+        st.page_link("views/drivers.py", label="🧑‍💼 Motoristas")
+        st.page_link("views/cars.py", label="🚗 Veículos")
+        
+        # Expenses section
+        st.subheader("💶 Despesas")
+        st.page_link("views/hr_expenses.py", label="👥 RH")
+        st.page_link("views/car_expenses.py", label="🚗 Veículos")
+        st.page_link("views/ga_expenses.py", label="📊 G&A")
+        
+        # Help section
+        st.subheader("❓ Ajuda")
+        st.page_link("views/faq.py", label="Perguntas Frequentes")
+
 @handle_streamlit_error()
 def main():
     """Main application entry point."""
@@ -24,31 +49,33 @@ def main():
         layout="wide"
     )
 
-    page_home    = st.Page("views/home.py", title="Home", default=True)
-    page_revenue = st.Page("views/revenue/__init__.py", title="Revenue Management", url_path="revenue")
-    page_drivers = st.Page("views/drivers.py", title="Driver Management", url_path="drivers")
-    page_driver  = st.Page("views/driver.py", title="Add Driver", url_path="driver")
-    page_cars    = st.Page("views/cars.py", title="Car Management", url_path="cars")
-    page_car     = st.Page("views/car.py", title="Add Car", url_path="car")
-    page_hr_expenses = st.Page("views/hr_expenses.py", title="HR Expenses", url_path="hr_expenses")
-    page_hr_expense  = st.Page("views/hr_expense.py", title="Add HR Expense", url_path="hr_expense")
-    page_car_expenses = st.Page("views/car_expenses.py", title="Car Expenses", url_path="car_expenses")
-    page_car_expense  = st.Page("views/car_expense.py", title="Add Car Expense", url_path="car_expense")
-    page_faqs    = st.Page("views/faq.py", title="FAQs")
-    
-    # Use the container to display content
-    pg = st.navigation([
-        page_home,
-        # page_revenue,
-        page_driver,
-        page_drivers,
-        page_car,
-        page_cars,
-        page_hr_expense,
-        page_hr_expenses,
-        page_faqs
-    ])
+    # Define all pages (including hidden ones)
+    pages = [
+        # Main pages (visible in navigation)
+        st.Page("views/home.py", title="Home", icon="🏠", default=True),
+        st.Page("views/drivers.py", title="Driver Management", icon="🧑‍💼", url_path="drivers"),
+        st.Page("views/cars.py", title="Car Management", icon="🚗", url_path="cars"),
+        st.Page("views/hr_expenses.py", title="HR Expenses", icon="👥", url_path="hr_expenses"),
+        st.Page("views/car_expenses.py", title="Car Expenses", icon="🚗", url_path="car_expenses"),
+        st.Page("views/ga_expenses.py", title="G&A Expenses", icon="📊", url_path="ga_expenses"),
+        st.Page("views/faq.py", title="FAQs", icon="❓"),
+        
+        # Hidden pages (accessible via links)
+        st.Page("views/revenue/__init__.py", title="Revenue Management", icon="💰", url_path="revenue"),
+        st.Page("views/driver.py", title="Add Driver", icon="➕", url_path="driver"),
+        st.Page("views/car.py", title="Add Car", icon="➕", url_path="car"),
+        st.Page("views/hr_expense.py", title="Add HR Expense", icon="➕", url_path="hr_expense"),
+        st.Page("views/car_expense.py", title="Add Car Expense", icon="➕", url_path="car_expense"),
+        st.Page("views/ga_expense.py", title="G&A Expense", icon="➕", url_path="ga_expense")
+    ]
 
+    # Set up navigation with position="hidden" to hide default navigation
+    pg = st.navigation(pages, position="hidden")
+    
+    # Add our custom sidebar
+    create_custom_sidebar()
+    
+    # Run the current page
     pg.run()
 
 if __name__ == "__main__":
