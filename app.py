@@ -15,6 +15,8 @@ def main():
     page_driver  = st.Page("views/driver.py", title="Add Driver", url_path="driver")
     page_cars    = st.Page("views/cars.py", title="Car Management", url_path="cars")
     page_car     = st.Page("views/car.py", title="Add Car", url_path="car")
+    page_hr_expenses = st.Page("views/hr_expenses.py", title="HR Expenses", url_path="hr_expenses")
+    page_hr_expense  = st.Page("views/hr_expense.py", title="Add HR Expense", url_path="hr_expense")
     page_faqs    = st.Page("views/faq.py", title="FAQs")
     
     # Use the container to display content
@@ -25,6 +27,8 @@ def main():
         page_drivers,
         page_car,
         page_cars,
+        page_hr_expense,
+        page_hr_expenses,
         page_faqs
     ])
 
