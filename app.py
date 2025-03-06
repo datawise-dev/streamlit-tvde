@@ -26,7 +26,7 @@ def create_custom_sidebar():
         
         # Revenue section
         st.subheader("💰 Receitas")
-        st.page_link("views/revenue/__init__.py", label="Receitas")
+        st.page_link("views/revenues.py", label="Receitas")
         
         # Management section
         st.subheader("📋 Gestão")
@@ -65,7 +65,8 @@ def main():
         st.Page("views/faq.py", title="FAQs", icon="❓"),
         
         # Hidden pages (accessible via links)
-        st.Page("views/revenue/__init__.py", title="Revenue Management", icon="💰", url_path="revenue"),
+        st.Page("views/revenues.py", title="Revenue Management", icon="💰", url_path="revenues"),
+        st.Page("views/revenue.py", title="Add Revenue Item", icon="💰", url_path="revenue"),
         st.Page("views/driver.py", title="Add Driver", icon="➕", url_path="driver"),
         st.Page("views/car.py", title="Add Car", icon="➕", url_path="car"),
         st.Page("views/hr_expense.py", title="Add HR Expense", icon="➕", url_path="hr_expense"),

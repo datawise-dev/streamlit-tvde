@@ -254,3 +254,5 @@ def show_revenue_form():
                     
         except Exception as e:
             st.error(f"Erro ao inserir dados: {str(e)}")
+
+show_revenue_form()
