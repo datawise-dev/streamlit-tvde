@@ -428,3 +428,28 @@ def get_car_expense_validators() -> Tuple[List[FieldValidator], List[Callable]]:
     cross_validators.append(validate_credit_date_range)
     
     return field_validators, cross_validators
+
+
+def get_ga_expense_validators() -> Tuple[List[FieldValidator], List[Callable]]:
+    """
+    Get validators for G&A expense data.
+    
+    Returns:
+        Tuple of (field_validators, cross_validators)
+    """
+    field_validators = [
+        ('expense_type', [validate_required]),
+        ('start_date', [validate_required, validate_date_format]),
+        ('end_date', [validate_date_format]),  # Not required
+        ('payment_date', [validate_date_format]),  # Not required
+        ('amount', [validate_required, validate_numeric, validate_min_value(0)]),
+        ('vat', [validate_numeric, validate_min_value(0), validate_max_value(100)]),  # VAT percentage 0-100
+        ('description', [validate_max_length(500)])  # Not required, but with max length
+    ]
+    
+    # Cross-field validators
+    cross_validators = [
+        validate_date_range('start_date', 'end_date')
+    ]
+    
+    return field_validators, cross_validators
