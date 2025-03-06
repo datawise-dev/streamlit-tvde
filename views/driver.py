@@ -1,11 +1,14 @@
 import streamlit as st
 import time
 from services.driver_service import DriverService
+from utils.error_handlers import handle_streamlit_error
 
 
 @st.dialog("Delete Driver")
+@handle_streamlit_error()
 def delete_driver(driver_id):
-    st.write("Please confirm bellow that you want to delete this driver")
+    """Dialog to confirm driver deletion with error handling."""
+    st.write("Please confirm below that you want to delete this driver")
     if st.button("Confirm"):
         with st.spinner("Deleting Driver...", show_time=True):
             DriverService.delete_driver(driver_id)
@@ -14,8 +17,9 @@ def delete_driver(driver_id):
         st.page_link("views/drivers.py")
 
 
+@handle_streamlit_error()
 def driver_form(existing_data=None):
-
+    """Display form for driver data with error handling."""
     if existing_data is None:
         existing_data = dict()
 
@@ -110,70 +114,70 @@ def driver_form(existing_data=None):
         return submit_button, data
 
 
-# Set page title based on mode
-existing_data = None
-if "id" in st.query_params:
-    try:
-        driver_id = int(st.query_params["id"])
-        # Get driver data
-        existing_data = DriverService.get_driver(driver_id)
-        if not existing_data:
-            # st.title("Adicionar Motorista")
-            st.error("Motorista não encontrado.")
-            st.stop()
+# Main view function with error handling
+@handle_streamlit_error()
+def main():
+    """Main driver form view with error handling."""
+    # Set page title based on mode
+    existing_data = None
+    
+    if "id" in st.query_params:
+        try:
+            driver_id = int(st.query_params["id"])
+            # Get driver data
+            existing_data = DriverService.get_driver(driver_id)
+            if not existing_data:
+                # st.title("Adicionar Motorista")
+                st.error("Motorista não encontrado.")
+                st.stop()
 
-        col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-        with col1:
-            st.title(f"Editar Motorista: {existing_data.get('display_name', '')}")
+            with col1:
+                st.title(f"Editar Motorista: {existing_data.get('display_name', '')}")
 
-        with col2:
-            if st.button("Delete"):
-                delete_driver(driver_id)
-    except (ValueError, TypeError):
+            with col2:
+                if st.button("Delete"):
+                    delete_driver(driver_id)
+        except (ValueError, TypeError):
+            st.title("Adicionar Motorista")
+            st.error("ID de motorista inválido.")
+    else:
         st.title("Adicionar Motorista")
 
-        st.error("ID de motorista inválido.")
-else:
-    st.title("Adicionar Motorista")
+    submit_button, driver_data = driver_form(existing_data)
 
+    required_fields = ["display_name", "first_name", "last_name", "nif"]
 
-submit_button, driver_data = driver_form(existing_data)
+    if submit_button:
+        for k in required_fields:
+            if driver_data.get(k, ""):
+                continue
+            st.error("Todos os campos obrigatórios devem ser preenchidos")
+            st.stop()
 
-required_fields = ["display_name", "first_name", "last_name", "nif"]
+        if existing_data:
+            try:
+                with st.spinner("A atualizar dados...", show_time=True):
+                    DriverService.update_driver(driver_id, driver_data)
+                st.success("Motorista atualizado com sucesso!")
+                # Adicionar botão para voltar à lista
+                # st.link_button("Voltar à Lista", "/drivers")
+                st.page_link("views/drivers.py", label="Voltar à lista de Motoristas")
+            except Exception as e:
+                st.error("Não foi possível atualizar o motorista.")
+                st.error(str(e))
+        else:
+            try:
+                with st.spinner("A adicionar dados...", show_time=True):
+                    DriverService.insert_driver(driver_data)
+                st.success("Motorista adicionado com sucesso!")
+                time.sleep(5)
+                # Clear form after successful insert
+                st.rerun()
+            except Exception as e:
+                st.error("Não foi possível adicionar o motorista.")
+                st.error(str(e))
 
-
-if submit_button:
-
-    for k in required_fields:
-        if driver_data.get(k, ""):
-            continue
-        st.error("Todos os campos obrigatórios devem ser preenchidos")
-        st.stop()
-
-    if existing_data:
-        try:
-            with st.spinner("A atualizar dados...", show_time=True):
-                DriverService.update_driver(driver_id, driver_data)
-            st.success("Motorista atualizado com sucesso!")
-            # Adicionar botão para voltar à lista
-            # st.link_button("Voltar à Lista", "/drivers")
-            st.page_link("views/drivers.py", label="Voltar à lista de Motoristas")
-        except Exception as e:
-            st.error(
-                "Não foi possível atualizar o motorista. Verifique os dados e tente novamente."
-            )
-            st.error(str(e))
-    else:
-        try:
-            with st.spinner("A adicionar dados...", show_time=True):
-                DriverService.insert_driver(driver_data)
-            st.success("Motorista adicionado com sucesso!")
-            time.sleep(5)
-            # Clear form after successful insert
-            st.rerun()
-        except Exception as e:
-            st.error(
-                "Não foi possível adicionar o motorista. Verifique os dados e tente novamente."
-            )
-            st.error(str(e))
+# Execute the main function
+main()

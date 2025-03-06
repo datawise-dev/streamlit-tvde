@@ -1,5 +1,7 @@
 import streamlit as st
+from utils.error_handlers import handle_streamlit_error
 
+@handle_streamlit_error()
 def show_home_page():
     """Display a simple home page with text."""
     
