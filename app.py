@@ -1,5 +1,20 @@
 import streamlit as st
+import logging
+from utils.error_handlers import handle_streamlit_error
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+@handle_streamlit_error()
 def main():
     """Main application entry point."""
     # Set page config at the very start
