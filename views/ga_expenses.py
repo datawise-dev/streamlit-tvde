@@ -9,7 +9,7 @@ def show_ga_expenses_view():
     st.title("G&A Expenses Management")
 
     with st.form('search_ga_expenses_form'):
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
 
         with col1:
             expense_type_filter = st.selectbox(
@@ -18,14 +18,14 @@ def show_ga_expenses_view():
                 index=0,
                 help="Filter expenses by type"
             )
-            
-        with col2:
+
             description_filter = st.text_input(
                 "Filter by Description",
                 help="Filter expenses by description text"
             )
             
-        with col3:
+        with col2:
+
             date_filter_type = st.selectbox(
                 "Date Filter Type",
                 options=["Start/End Dates", "Payment Date"],
@@ -84,30 +84,6 @@ def show_ga_expenses_view():
                 (filtered_df['payment_date'] <= date_range[1])
             ]
 
-    # Compute summary statistics
-    if not filtered_df.empty:
-        st.subheader("Summary")
-        
-        total_expense = filtered_df['amount'].sum()
-        avg_expense = filtered_df['amount'].mean()
-        expense_count = len(filtered_df)
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("Total Expenses", f"{total_expense:.2f} €")
-        
-        with col2:
-            st.metric("Average Expense", f"{avg_expense:.2f} €")
-        
-        with col3:
-            st.metric("Number of Expenses", f"{expense_count}")
-
-        # Show expense distribution by type
-        st.subheader("Expense Distribution by Type")
-        expense_by_type = filtered_df.groupby('expense_type')['amount'].sum().reset_index()
-        st.bar_chart(expense_by_type, x='expense_type', y='amount')
-
     # Add edit column with link to edit page
     filtered_df["edit_link"] = filtered_df["id"].apply(lambda x: f"/ga_expense?id={x}")
 
@@ -117,7 +93,7 @@ def show_ga_expenses_view():
     ]
 
     # Show dataframe with clickable edit column
-    st.subheader("G&A Expenses List")
+    # st.subheader("G&A Expenses List")
     st.dataframe(
         filtered_df[display_cols],
         column_config={

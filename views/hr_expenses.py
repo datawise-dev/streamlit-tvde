@@ -5,7 +5,7 @@ from services.hr_expense_service import HRExpenseService
 st.title("Gestão de Despesas de RH")
 
 with st.form('search_expenses_form'):
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
         driver_filter = st.text_input(
@@ -18,14 +18,6 @@ with st.form('search_expenses_form'):
             "Intervalo de Datas de Pagamento",
             value=[],
             help="Filtrar por data de pagamento"
-        )
-    
-    with col3:
-        month_year_filter = st.selectbox(
-            "Filtrar por Mês/Ano",
-            options=["Todos"] + [f"{m}/{y}" for y in range(2020, 2026) for m in range(1, 13)],
-            index=0,
-            help="Filtrar por mês e ano específico"
         )
 
     submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
@@ -57,38 +49,6 @@ if len(date_range) == 2:
         (filtered_df['payment_date'] >= date_range[0]) &
         (filtered_df['payment_date'] <= date_range[1])
     ]
-    
-if month_year_filter != "Todos":
-    month, year = month_year_filter.split('/')
-    month, year = int(month), int(year)
-    filtered_df = filtered_df[
-        (filtered_df['start_date'].dt.month == month) &
-        (filtered_df['start_date'].dt.year == year)
-    ]
-
-# Compute summary statistics
-if not filtered_df.empty:
-    st.subheader("Resumo")
-    
-    total_expenses = filtered_df['total_expense'].sum()
-    total_base_salary = filtered_df['base_salary'].sum()
-    total_meal_allowance = filtered_df['meal_allowance_total'].sum()
-    total_other_benefits = filtered_df['other_benefits'].sum()
-    driver_count = filtered_df['driver_id'].nunique()
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Despesas", f"{total_expenses:.2f} €")
-    
-    with col2:
-        st.metric("Total Salários Base", f"{total_base_salary:.2f} €")
-    
-    with col3:
-        st.metric("Total Subsídio Alimentação", f"{total_meal_allowance:.2f} €")
-    
-    with col4:
-        st.metric("Motoristas", f"{driver_count}")
 
 # Add edit link column for the dataframe
 filtered_df["edit_link"] = filtered_df["id"].apply(lambda x: f"/hr_expense?id={x}")
