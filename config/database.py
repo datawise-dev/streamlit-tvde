@@ -1,18 +1,12 @@
 import streamlit as st
+import os
+from dotenv import load_dotenv
 
-#DB_CONFIG = {
-#    'dbname': st.secrets.get("DB_NAME", "revenue_db"),
-#    'user': st.secrets.get("DB_USER", "postgres"),
-#    'password': st.secrets.get("DB_PASSWORD", ""),
-#    'host': st.secrets.get("DB_HOST", "localhost"),
-#    'port': st.secrets.get("DB_PORT", "5432")
-#}
-
-# Database connection parameters
+load_dotenv()
 DB_CONFIG = {
-    'dbname': "core", #st.secrets.get("DB_NAME", "revenue_db"),
-    'user': "jpceia", #st.secrets.get("DB_USER", "postgres"),
-    'password': "gS7dzT2eNpJU", #st.secrets.get("DB_PASSWORD", ""),
-    'host': "ep-fancy-tree-a2etcj4n-pooler.eu-central-1.aws.neon.tech", #st.secrets.get("DB_HOST", "localhost"),
-    'port': 5432 #st.secrets.get("DB_PORT", "5432")
+    'dbname': os.getenv("DB_NAME") or st.secrets.get("DB_NAME", "revenue_db"),
+    'user': os.getenv("DB_USER") or st.secrets.get("DB_USER", "postgres"),
+    'password': os.getenv("DB_PASSWORD") or st.secrets.get("DB_PASSWORD", ""),
+    'host': os.getenv("DB_HOST") or st.secrets.get("DB_HOST", "localhost"),
+    'port': os.getenv("DB_PORT") or st.secrets.get("DB_PORT", "5432")
 }
