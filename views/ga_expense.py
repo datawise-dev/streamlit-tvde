@@ -28,21 +28,31 @@ def ga_expense_form(existing_data=None):
     with st.form("ga_expense_form", clear_on_submit=True):
         st.subheader("G&A Expense Information")
 
-        # Expense type selection
-        expense_type_options = ["Rental", "Licences - RNAVT", "Insurance", "Electricity", "Water", "Other"]
-        default_type_index = 0
-        if existing_data.get('expense_type') in expense_type_options:
-            default_type_index = expense_type_options.index(existing_data.get('expense_type'))
-        
-        data["expense_type"] = st.selectbox(
-            "Expense Type *",
-            options=expense_type_options,
-            index=default_type_index,
-            help="Type of G&A expense"
-        )
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Expense type selection
+            expense_type_options = ["Rental", "Licences - RNAVT", "Insurance", "Electricity", "Water", "Other"]
+            default_type_index = 0
+            if existing_data.get('expense_type') in expense_type_options:
+                default_type_index = expense_type_options.index(existing_data.get('expense_type'))
+            
+            data["expense_type"] = st.selectbox(
+                "Expense Type *",
+                options=expense_type_options,
+                index=default_type_index,
+                help="Type of G&A expense"
+            )
+
+        with col2:
+            data["payment_date"] = st.date_input(
+                "Payment Date",
+                value=existing_data.get('payment_date', None),
+                help="Date when the expense was paid"
+            )
 
         # Date information
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
             data["start_date"] = st.date_input(
@@ -56,13 +66,6 @@ def ga_expense_form(existing_data=None):
                 "End Date",
                 value=existing_data.get('end_date', None),
                 help="End date (if applicable, e.g., for period-based expenses)"
-            )
-            
-        with col3:
-            data["payment_date"] = st.date_input(
-                "Payment Date",
-                value=existing_data.get('payment_date', None),
-                help="Date when the expense was paid"
             )
 
         # Amount and VAT
@@ -175,7 +178,7 @@ def main():
                 with st.spinner("Updating data..."):
                     GAExpenseService.update_ga_expense(existing_data['id'], expense_data)
                 st.success("G&A expense updated successfully!")
-                st.page_link("views/ga_expenses.py", label="Back to G&A Expenses List")
+                # st.page_link("views/ga_expenses.py", label="Back to G&A Expenses List")
             else:
                 with st.spinner("Adding data..."):
                     GAExpenseService.insert_ga_expense(expense_data)
