@@ -1,28 +1,9 @@
 import streamlit as st
-import time
 import pandas as pd
 from services.driver_service import DriverService
 from utils.error_handlers import handle_streamlit_error
-
-
-@st.dialog("Eliminar Motorista")
-@handle_streamlit_error()
-def delete_driver(driver_id, driver_name):
-    """Dialog to confirm driver deletion."""
-    st.write(f"Tem a certeza que deseja eliminar o motorista **{driver_name}**?")
-    st.warning("Esta ação não pode ser revertida.")
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("Cancelar", use_container_width=True):
-            st.dismiss()
-    with col2:
-        if st.button("Confirmar", type="primary", use_container_width=True):
-            with st.spinner("A eliminar motorista...", show_time=True):
-                DriverService.delete_driver(driver_id)
-            st.success("Motorista eliminado com sucesso!")
-            time.sleep(1.5)
-            st.rerun()
+from utils.navigation import switch_page
+from views.drivers.delete import driver_delete
 
 
 def display_driver_card(driver):
@@ -37,9 +18,7 @@ def display_driver_card(driver):
 
             details_col1, details_col2, details_col3 = st.columns(3)
             with details_col1:
-                st.markdown(
-                    f"**Nome:** {driver['first_name']} {driver['last_name']}"
-                )
+                st.markdown(f"**Nome:** {driver['first_name']} {driver['last_name']}")
                 st.markdown(
                     f"**NIF:** {driver['nif'] if not pd.isna(driver['nif']) else 'N/A'}"
                 )
@@ -51,9 +30,7 @@ def display_driver_card(driver):
                 if not pd.isna(driver["postal_code"]) and driver["postal_code"]:
                     location_info.append(driver["postal_code"])
 
-                location_text = (
-                    ", ".join(location_info) if location_info else "N/A"
-                )
+                location_text = ", ".join(location_info) if location_info else "N/A"
                 st.markdown(f"**Localização:** {location_text}")
 
                 status_color = "green" if driver["is_active"] else "gray"
@@ -77,16 +54,19 @@ def display_driver_card(driver):
 
         with col2:
             # Action buttons
-            st.link_button(
-                label="Editar",
-                url=f"views/driver.py?id={driver['id']}",
+            if st.button(
+                "Editar",
+                key=f"edit_{driver['id']}",
+                type="secondary",
                 icon="✏️",
                 use_container_width=True,
-            )
+            ):
+                switch_page(f"views/drivers/edit.py?id={driver['id']}")
+
             st.button(
                 "Eliminar",
                 key=f"delete_{driver['id']}",
-                on_click=delete_driver,
+                on_click=driver_delete,
                 args=(driver["id"], driver["display_name"]),
                 type="secondary",
                 icon="🗑️",
@@ -119,7 +99,7 @@ def show_drivers_view():
 
     # Add New Driver button at the top
     st.page_link(
-        "views/driver.py",
+        "views/drivers/add.py",
         label="Adicionar Novo Motorista",
         icon="➕",
         use_container_width=True,

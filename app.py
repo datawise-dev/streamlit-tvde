@@ -67,7 +67,8 @@ def main():
         # Hidden pages (accessible via links)
         st.Page("views/revenues.py", title="Revenue Management", icon="💰", url_path="revenues"),
         st.Page("views/revenue.py", title="Add Revenue Item", icon="💰", url_path="revenue"),
-        st.Page("views/driver.py", title="Add Driver", icon="➕", url_path="driver"),
+        st.Page("views/drivers/add.py", title="Add Driver", icon="➕", url_path="drivers_add"),
+        st.Page("views/drivers/edit.py", title="Edit Driver", icon="✏️", url_path="drivers_edit"),
         st.Page("views/car.py", title="Add Car", icon="➕", url_path="car"),
         st.Page("views/hr_expense.py", title="Add HR Expense", icon="➕", url_path="hr_expense"),
         st.Page("views/car_expense.py", title="Add Car Expense", icon="➕", url_path="car_expense"),
