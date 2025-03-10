@@ -3,21 +3,21 @@ import time
 from services.ga_expense_service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 
-@st.dialog("Delete G&A Expense")
+@st.dialog("Eliminar Despesa G&A")
 @handle_streamlit_error()
 def ga_expense_delete(expense_id):
     """Dialog to confirm deletion of a G&A expense record."""
-    st.write("Are you sure you want to delete this G&A expense?")
-    st.warning("This action cannot be undone.")
+    st.write("Tem a certeza que deseja eliminar esta despesa G&A?")
+    st.warning("Esta ação não pode ser revertida.")
     
     col1, col2 = st.columns([1, 1])
     with col1:
-        if st.button("Cancel", use_container_width=True):
+        if st.button("Cancelar", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("Confirm", type="primary", use_container_width=True):
-            with st.spinner("Deleting expense...", show_time=True):
+        if st.button("Confirmar", type="primary", use_container_width=True):
+            with st.spinner("A eliminar despesa...", show_time=True):
                 GAExpenseService.delete_ga_expense(expense_id)
-            st.success("G&A expense deleted successfully!")
+            st.success("Despesa G&A eliminada com sucesso!")
             time.sleep(1.5)
-            st.switch_page("ga_expenses")
+            st.switch_page("views/ga_expenses/page.py")
