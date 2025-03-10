@@ -3,8 +3,6 @@ import time
 from services.driver_service import DriverService
 from views.drivers.form import driver_form
 
-# Main view function with error handling
-# """Main driver form view with error handling."""
 st.title("Adicionar Motorista")
 
 submit_button, driver_data = driver_form()
