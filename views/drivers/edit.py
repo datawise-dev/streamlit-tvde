@@ -45,4 +45,10 @@ if submit_button:
         st.error("Não foi possível atualizar o motorista.")
         st.error(str(e))
 
-st.page_link("views/drivers.py", label="Voltar à lista de Motoristas", icon="⬅️")
+# Botões de navegação e ações adicionais
+col1, col2 = st.columns(2)
+with col1:
+    st.page_link("views/drivers.py", label="Voltar à lista de Motoristas", icon="⬅️", use_container_width=True)
+with col2:
+    if st.button("Eliminar Motorista", type="tertiary", icon="🗑️", use_container_width=True):
+        driver_delete(driver_id, existing_data.get('display_name', ''))
