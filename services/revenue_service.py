@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import pandas as pd
 from psycopg2.extras import execute_values
 from database.connection import get_db_connection, get_db_engine
@@ -49,10 +49,68 @@ class RevenueService(BaseService):
         # Validate the data before insertion
         is_valid, errors = cls.validate(data)
         if not is_valid:
-            raise Exception(f"Invalid data: {', '.join(errors)}")
+            raise Exception(f"Dados inválidos: {', '.join(errors)}")
             
         # Proceed with insertion
         return cls.insert(data)
+
+    @classmethod
+    @handle_service_error("Erro ao atualizar dados de receita")
+    def update_revenue(cls, revenue_id: int, data: Dict) -> bool:
+        """
+        Update a revenue record with validation.
+        
+        Args:
+            revenue_id: ID of the revenue to update
+            data: Dictionary containing revenue data
+            
+        Returns:
+            True if successful
+            
+        Raises:
+            Exception: If validation fails or update error occurs
+        """
+        # Validate the data before update
+        is_valid, errors = cls.validate(data)
+        if not is_valid:
+            raise Exception(f"Dados inválidos: {', '.join(errors)}")
+            
+        # Proceed with update
+        return cls.update(revenue_id, data)
+            
+    @classmethod
+    @handle_service_error("Erro ao obter registo de receita")
+    def get_revenue(cls, revenue_id: int) -> Optional[Dict]:
+        """
+        Get a revenue record by ID.
+        
+        Args:
+            revenue_id: ID of the revenue to retrieve
+            
+        Returns:
+            Dictionary with revenue data or None if not found
+            
+        Raises:
+            Exception: If the query fails
+        """
+        return cls.get(revenue_id)
+        
+    @classmethod
+    @handle_service_error("Erro ao eliminar registo de receita")
+    def delete_revenue(cls, revenue_id: int) -> bool:
+        """
+        Delete a revenue record by ID.
+        
+        Args:
+            revenue_id: ID of the revenue to delete
+            
+        Returns:
+            True if successful
+            
+        Raises:
+            Exception: If delete error occurs
+        """
+        return cls.delete(revenue_id)
 
     @classmethod
     @handle_service_error("Erro ao inserir múltiplos dados de receita")
@@ -74,7 +132,7 @@ class RevenueService(BaseService):
         for i, data in enumerate(data_list):
             is_valid, errors = cls.validate(data)
             if not is_valid:
-                raise Exception(f"Invalid data in record {i+1}: {', '.join(errors)}")
+                raise Exception(f"Dados inválidos no registo {i+1}: {', '.join(errors)}")
                 
         # Proceed with bulk insertion
         try:
@@ -95,7 +153,7 @@ class RevenueService(BaseService):
                 conn.commit()
             return True
         except Exception as e:
-            raise Exception(f"Error bulk inserting data: {str(e)}")
+            raise Exception(f"Erro ao inserir dados em massa: {str(e)}")
 
     @classmethod
     @handle_service_error("Erro ao carregar dados de receita")
@@ -120,9 +178,3 @@ class RevenueService(BaseService):
         """
         engine = get_db_engine()
         return pd.read_sql_query(query, engine)
-
-    @classmethod
-    @handle_service_error("Erro ao eliminar registos")
-    def delete_records(cls, ids: List[int]) -> bool:
-        """Delete specified records from database."""
-        return cls.delete_many(ids)
