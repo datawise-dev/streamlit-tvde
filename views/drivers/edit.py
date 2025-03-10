@@ -6,7 +6,7 @@ from utils.navigation import check_query_params
 check_query_params()
 
 if "id" not in st.query_params:
-    st.warning("Missing Driver id")
+    st.warning("ID do motorista em falta")
     st.stop()
 
 try:
