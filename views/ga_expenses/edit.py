@@ -71,7 +71,7 @@ def main():
     # Navigation and action buttons
     col1, col2 = st.columns(2)
     with col1:
-        st.page_link("ga_expenses", label="Back to G&A Expenses List", icon="⬅️", use_container_width=True)
+        st.page_link("views/ga_expenses/page.py", label="Back to G&A Expenses List", icon="⬅️", use_container_width=True)
     with col2:
         if st.button("Delete Expense", type="tertiary", icon="🗑️", use_container_width=True):
             ga_expense_delete(expense_id)
