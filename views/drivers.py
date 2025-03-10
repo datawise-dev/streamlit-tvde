@@ -6,22 +6,22 @@ from utils.navigation import switch_page
 from views.drivers.delete import driver_delete
 
 
-def display_driver_card(driver):
+def driver_card(driver):
 
     with st.container(border=True):
         col1, col2 = st.columns([8, 2])
 
         with col1:
             # Main driver info
-            details_col1, details_col2, details_col3 = st.columns(3)
-            st.markdown(f"### {driver['display_name']}")
-
+            st.markdown(f"<h3 style='margin-bottom:0.5rem'>{driver['display_name']}</h3>", 
+                        unsafe_allow_html=True)
+            
             details_col1, details_col2, details_col3 = st.columns(3)
             with details_col1:
-                st.markdown(f"**Nome:** {driver['first_name']} {driver['last_name']}")
-                st.markdown(
-                    f"**NIF:** {driver['nif'] if not pd.isna(driver['nif']) else 'N/A'}"
-                )
+                st.markdown(f"<strong>Nome:</strong> {driver['first_name']} {driver['last_name']}", 
+                           unsafe_allow_html=True)
+                st.markdown(f"<strong>NIF:</strong> {driver['nif'] if not pd.isna(driver['nif']) else 'N/A'}", 
+                           unsafe_allow_html=True)
 
             with details_col2:
                 location_info = []
@@ -31,26 +31,24 @@ def display_driver_card(driver):
                     location_info.append(driver["postal_code"])
 
                 location_text = ", ".join(location_info) if location_info else "N/A"
-                st.markdown(f"**Localização:** {location_text}")
+                st.markdown(f"<strong>Localização:</strong> {location_text}", 
+                           unsafe_allow_html=True)
 
-                status_color = "green" if driver["is_active"] else "gray"
+                status_color = "#2E7D32" if driver["is_active"] else "#757575"
                 status_text = "Ativo" if driver["is_active"] else "Inativo"
+                status_icon = "✅" if driver["is_active"] else "❌"
                 st.markdown(
-                    f"**Estado:** <span style='color:{status_color};font-weight:bold'>{status_text}</span>",
+                    f"<strong>Estado:</strong> <span style='color:{status_color};font-weight:bold'>{status_icon} {status_text}</span>",
                     unsafe_allow_html=True,
                 )
 
             with details_col3:
                 # Additional contact info
-                if not pd.isna(driver.get("address_line1")) and driver.get(
-                    "address_line1"
-                ):
+                if not pd.isna(driver.get("address_line1")) and driver.get("address_line1"):
                     address = driver.get("address_line1", "")
-                    if not pd.isna(driver.get("address_line2")) and driver.get(
-                        "address_line2"
-                    ):
+                    if not pd.isna(driver.get("address_line2")) and driver.get("address_line2"):
                         address += f", {driver.get('address_line2', '')}"
-                    st.markdown(f"**Morada:**\n{address}")
+                    st.markdown(f"<strong>Morada:</strong><br>{address}", unsafe_allow_html=True)
 
         with col2:
             # Action buttons
@@ -139,7 +137,7 @@ def show_drivers_view():
 
         # Display custom card layout for each driver
         for i, (_, driver) in enumerate(filtered_df.iterrows()):
-            display_driver_card(driver)
+            driver_card(driver)
 
 
 # Execute the function
