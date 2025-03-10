@@ -23,4 +23,4 @@ def car_delete(car_id, license_plate):
                 CarService.delete_car(car_id)
             st.success("Veículo eliminado com sucesso!")
             time.sleep(1.5)
-            st.page_link("views/cars/page.py")
+            st.page_switch("cars")
