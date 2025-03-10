@@ -7,11 +7,14 @@ def driver_form(existing_data=None):
 
     if existing_data is None:
         existing_data = dict()
+        clear_form = True
+    else:
+        clear_form = False  # Não limpar quando estiver em modo de edição
 
     data = dict()
 
     # Create form for driver data
-    with st.form("driver_form", clear_on_submit=True):
+    with st.form("driver_form", clear_on_submit=clear_form):
 
         st.subheader("Informação Pessoal")
 
