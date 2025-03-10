@@ -3,6 +3,7 @@ from services.driver_service import DriverService
 from views.drivers.delete import driver_delete
 from views.drivers.form import driver_form
 from utils.navigation import check_query_params
+
 check_query_params()
 
 if "id" not in st.query_params:
@@ -40,7 +41,7 @@ if submit_button:
         st.success("Motorista atualizado com sucesso!")
         # Adicionar botão para voltar à lista
         # st.link_button("Voltar à Lista", "/drivers")
-        
+
     except Exception as e:
         st.error("Não foi possível atualizar o motorista.")
         st.error(str(e))
@@ -48,7 +49,14 @@ if submit_button:
 # Botões de navegação e ações adicionais
 col1, col2 = st.columns(2)
 with col1:
-    st.page_link("views/drivers.py", label="Voltar à lista de Motoristas", icon="⬅️", use_container_width=True)
+    st.page_link(
+        "views/drivers.py",
+        label="Voltar à lista de Motoristas",
+        icon="⬅️",
+        use_container_width=True,
+    )
 with col2:
-    if st.button("Eliminar Motorista", type="tertiary", icon="🗑️", use_container_width=True):
-        driver_delete(driver_id, existing_data.get('display_name', ''))
+    if st.button(
+        "Eliminar Motorista", type="tertiary", icon="🗑️", use_container_width=True
+    ):
+        driver_delete(driver_id, existing_data.get("display_name", ""))

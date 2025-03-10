@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.error_handlers import handle_streamlit_error
 
+
 @handle_streamlit_error()
 def driver_form(existing_data=None):
     """Display form for driver data with error handling."""
