@@ -31,7 +31,7 @@ def main():
             st.error("Não foi possível adicionar o motorista.")
             st.error(str(e))
 
-    st.page_link("views/drivers.py", label="Voltar à lista de Motoristas", icon="⬅️")
+    st.page_link("views/drivers/page.py", label="Voltar à lista de Motoristas", icon="⬅️")
 
 # Execute the main function
 main()

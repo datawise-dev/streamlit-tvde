@@ -53,7 +53,7 @@ def main():
     col1, col2 = st.columns(2)
     with col1:
         st.page_link(
-            "views/drivers.py",
+            "views/drivers/page.py",
             label="Voltar à lista de Motoristas",
             icon="⬅️",
             use_container_width=True,
