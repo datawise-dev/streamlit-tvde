@@ -37,7 +37,7 @@ def create_custom_sidebar():
         st.subheader("💶 Despesas")
         st.page_link("views/hr_expenses.py", label="👥 RH")
         st.page_link("views/car_expenses.py", label="🚗 Veículos")
-        st.page_link("views/ga_expenses.py", label="📊 G&A")
+        st.page_link("views/ga_expenses/page.py", label="📊 G&A")
         
         # Help section
         st.subheader("❓ Ajuda")
@@ -61,7 +61,7 @@ def main():
         st.Page("views/cars/page.py", title="Car Management", icon="🚗", url_path="cars"),
         st.Page("views/hr_expenses.py", title="HR Expenses", icon="👥", url_path="hr_expenses"),
         st.Page("views/car_expenses.py", title="Car Expenses", icon="🚗", url_path="car_expenses"),
-        st.Page("views/ga_expenses.py", title="G&A Expenses", icon="📊", url_path="ga_expenses"),
+        st.Page("views/ga_expenses/page.py", title="G&A Expenses", icon="📊", url_path="ga_expenses"),
         st.Page("views/faq.py", title="FAQs", icon="❓"),
         
         # Hidden pages (accessible via links)
@@ -73,7 +73,8 @@ def main():
         st.Page("views/cars/edit.py", title="Edit Car", icon="✏️", url_path="car_edit"),
         st.Page("views/hr_expense.py", title="Add HR Expense", icon="➕", url_path="hr_expense"),
         st.Page("views/car_expense.py", title="Add Car Expense", icon="➕", url_path="car_expense"),
-        st.Page("views/ga_expense.py", title="G&A Expense", icon="➕", url_path="ga_expense")
+        st.Page("views/ga_expenses/add.py", title="Add G&A Expense", icon="➕", url_path="ga_expenses_add"),
+        st.Page("views/ga_expenses/edit.py", title="Edit G&A Expense", icon="✏️", url_path="ga_expenses_edit")
     ]
 
     # Set up navigation with position="hidden" to hide default navigation
