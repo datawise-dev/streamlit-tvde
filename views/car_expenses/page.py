@@ -34,7 +34,7 @@ def car_expense_row(expense):
             st.write(f"**{expense['expense_type']}**")
 
         with cols[1]:
-            st.caption(f"{expense['license_plate']}")
+            st.caption(expense['license_plate'])
 
         with cols[2]:
             st.caption(f"{total_amount:.2f} €")
