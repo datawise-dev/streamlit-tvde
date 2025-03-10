@@ -1,15 +1,16 @@
 import streamlit as st
 from urllib.parse import urlparse, parse_qs
+import inspect
+import os
 
 def switch_page(url):
     """
-    Custom page link that supports query parameters by storing them in session state.
+    Custom switch page that supports query parameters by storing them in session state.
     
     Args:
         url: Target URL with optional query parameters (e.g., "views/driver.py?id=123")
-        
+
     Returns:
-        The Streamlit switch_page component
     """
     # Parse the URL to separate path and query parameters
     parsed_url = urlparse(url)
@@ -27,7 +28,7 @@ def switch_page(url):
             'params': query_dict
         }
     
-    # Create page link without query parameters
+    # Create switch page without query parameters
     st.switch_page(base_path)
 
 def check_query_params():
@@ -40,10 +41,14 @@ def check_query_params():
     """
     if 'stored_query_params' in st.session_state:
         stored = st.session_state.stored_query_params
-        current_page = st.script_run_ctx.get_info().script_path
+        
+        # Get the caller's filename using inspect
+        frame = inspect.currentframe().f_back
+        filename = frame.f_code.co_filename
+        script_path = os.path.relpath(filename).replace('\\', '/')
         
         # Check if the stored parameters are for the current page
-        if stored['target_page'] == current_page:
+        if stored['target_page'] == script_path:
             # Apply stored parameters to current page's query params
             for key, value in stored['params'].items():
                 st.query_params[key] = value
