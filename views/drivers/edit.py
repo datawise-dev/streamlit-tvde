@@ -2,13 +2,8 @@ import streamlit as st
 from services.driver_service import DriverService
 from views.drivers.delete import driver_delete
 from views.drivers.form import driver_form
-from utils.page_init import page_init
-
-page_init()
-
-# Main view function with error handling
-# """Main driver form view with error handling."""
-# Set page title based on mode
+from utils.navigation import check_query_params
+check_query_params()
 
 if "id" not in st.query_params:
     st.warning("Missing Driver id")

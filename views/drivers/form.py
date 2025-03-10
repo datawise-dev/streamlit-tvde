@@ -16,7 +16,7 @@ def driver_form(existing_data=None):
         st.subheader("Informação Pessoal")
 
         data["display_name"] = st.text_input(
-            "Display Name *",
+            "Nome de Exibição *",
             value=existing_data.get("display_name", ""),
             help="Nome único para identificação do motorista",
         )
@@ -25,12 +25,12 @@ def driver_form(existing_data=None):
 
         with col1:
             data["first_name"] = st.text_input(
-                "First Name *", value=existing_data.get("first_name", "")
+                "Nome *", value=existing_data.get("first_name", "")
             )
 
         with col2:
             data["last_name"] = st.text_input(
-                "Last Name *", value=existing_data.get("last_name", "")
+                "Apelido *", value=existing_data.get("last_name", "")
             )
 
         col1, col2 = st.columns(2)
@@ -39,38 +39,38 @@ def driver_form(existing_data=None):
             data["nif"] = st.text_input(
                 "NIF *",
                 value=existing_data.get("nif", ""),
-                help="Tax identification number",
+                help="Número de Identificação Fiscal",
             )
 
         with col2:
             data["niss"] = st.text_input(
                 "NISS",
                 value=existing_data.get("niss", ""),
-                help="Social security number",
+                help="Número de Identificação de Segurança Social",
             )
 
         # Address information
         st.subheader("Morada")
         data["address_line1"] = st.text_input(
-            "Address Line 1", value=existing_data.get("address_line1", "")
+            "Linha de Endereço 1", value=existing_data.get("address_line1", "")
         )
 
         data["address_line2"] = st.text_input(
-            "Address Line 2", value=existing_data.get("address_line2", "")
+            "Linha de Endereço 2", value=existing_data.get("address_line2", "")
         )
 
         col1, col2 = st.columns(2)
 
         with col1:
             data["postal_code"] = st.text_input(
-                "Postal Code",
+                "Código Postal",
                 value=existing_data.get("postal_code", ""),
                 placeholder="XXXX-XXX",
             )
 
         with col2:
             data["location"] = st.text_input(
-                "Location", value=existing_data.get("location", "")
+                "Localidade", value=existing_data.get("location", "")
             )
 
         if existing_data:
@@ -82,9 +82,9 @@ def driver_form(existing_data=None):
 
             with col2:
                 data["is_active"] = st.checkbox(
-                    "Is Active",
+                    "Ativo",
                     value=existing_data.get("is_active", True),
-                    help="Indicate if this driver is currently active",
+                    help="Indica se este motorista está atualmente ativo",
                 )
         else:
             data["is_active"] = True
