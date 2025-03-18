@@ -62,8 +62,6 @@ def main():
             with st.spinner("A adicionar dados..."):
                 HRExpenseService.insert_expense(expense_data)
             st.success("Despesa RH adicionada com sucesso!")
-            time.sleep(2)
-            st.rerun()
         except Exception as e:
             st.error(f"Erro ao guardar dados: {str(e)}")
 

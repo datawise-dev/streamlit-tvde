@@ -24,9 +24,6 @@ def main():
             with st.spinner("A adicionar dados...", show_time=True):
                 DriverService.insert_driver(driver_data)
             st.success("Motorista adicionado com sucesso!")
-            time.sleep(5)
-            # Clear form after successful insert
-            st.rerun()
         except Exception as e:
             st.error("Não foi possível adicionar o motorista.")
             st.error(str(e))

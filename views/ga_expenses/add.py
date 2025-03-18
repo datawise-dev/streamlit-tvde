@@ -53,8 +53,6 @@ def main():
             with st.spinner("A adicionar dados..."):
                 GAExpenseService.insert_ga_expense(expense_data)
             st.success("Despesa G&A adicionada com sucesso!")
-            time.sleep(5)
-            st.rerun()
         except Exception as e:
             st.error(f"Erro ao guardar dados: {str(e)}")
 
