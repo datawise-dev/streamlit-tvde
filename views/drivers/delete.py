@@ -16,9 +16,10 @@ def driver_delete(driver_id, driver_name):
         if st.button("Cancelar", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("Confirmar", type="primary", use_container_width=True):
-            with st.spinner("A eliminar motorista...", show_time=True):
-                DriverService.delete_driver(driver_id)
-            st.success("Motorista eliminado com sucesso!")
-            time.sleep(1.5)
-            st.page_switch("views/drivers/page.py")
+        btn_delete = st.button("Confirmar", type="primary", use_container_width=True)
+    if btn_delete:
+        with st.spinner("A eliminar motorista...", show_time=True):
+            DriverService.delete_driver(driver_id)
+        st.success("Motorista eliminado com sucesso!")
+        time.sleep(2.5)
+        st.switch_page("views/drivers/page.py")
