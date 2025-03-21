@@ -66,6 +66,7 @@ def bulk_import_component(
             column_mapping = {}
             file_columns = ["-- Não Mapear --"] + list(df.columns)
             
+            # Create two-column layout for each field mapping
             for field in standard_fields:
                 display_name = field_display_names.get(field, field)
                 
@@ -76,12 +77,22 @@ def bulk_import_component(
                         default_index = i
                         break
                 
-                selected_column = st.selectbox(
-                    f"{display_name}:",
-                    options=file_columns,
-                    index=default_index,
-                    key=f"mapping_{field}"
-                )
+                # Create a two-column layout for each field
+                col1, col2 = st.columns([2, 3])
+                
+                with col1:
+                    # Right-align the label with HTML (add asterisk for required fields)
+                    required_marker = " *" if field in standard_fields[:4] else ""  # Example: mark first 4 fields as required
+                    st.markdown(f"<div style='text-align: right'><strong>{display_name}{required_marker}:</strong></div>", unsafe_allow_html=True)
+                
+                with col2:
+                    selected_column = st.selectbox(
+                        label="",  # Empty label since we're using the column to the left
+                        options=file_columns,
+                        index=default_index,
+                        key=f"mapping_{field}",
+                        label_visibility='collapsed'
+                    )
                 
                 if selected_column != "-- Não Mapear --":
                     column_mapping[field] = selected_column
