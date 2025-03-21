@@ -57,7 +57,7 @@ def bulk_import_component(
             
             # Preview the data
             st.subheader("Pré-visualização dos Dados")
-            st.dataframe(df.head(10))
+            st.dataframe(df.head(10), hide_index=True)
             
             # Column mapping
             st.subheader("Mapeamento de Colunas")
