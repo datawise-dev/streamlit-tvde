@@ -4,8 +4,6 @@ from services.car_service import CarService
 from views.cars.form import car_form
 from utils.error_handlers import handle_streamlit_error
 from utils.bulk_import import bulk_import_component
-from datetime import date
-
 
 def manual_entry_tab():
     # Existing manual entry form
@@ -102,13 +100,14 @@ def bulk_entry_tab():
         return True
     
     # Use the bulk import component
-    bulk_import_component(
-        entity_name="veículos",
-        standard_fields=standard_fields,
-        validation_function=validate_car_record,
-        upload_function=upload_car_records,
-        field_display_names=field_display_names
-    )
+    with st.container(border=1):
+        bulk_import_component(
+            entity_name="veículos",
+            standard_fields=standard_fields,
+            validation_function=validate_car_record,
+            upload_function=upload_car_records,
+            field_display_names=field_display_names
+        )
     
     # Display additional help information
     with st.expander("Informação sobre Categorias"):
@@ -128,7 +127,7 @@ def main():
     st.title("Adicionar Veículo")
     
     # Create tabs for manual entry and bulk import
-    tab1, tab2 = st.tabs(["Inserção Manual", "Importação em Massa"])
+    tab1, tab2 = st.tabs(["Manual", "Ficheiro"])
     
     with tab1:
         manual_entry_tab()
