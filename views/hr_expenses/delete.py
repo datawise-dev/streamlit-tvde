@@ -2,6 +2,7 @@ import streamlit as st
 import time
 from services.hr_expense_service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
+from utils.navigation import switch_page
 
 
 @st.dialog("Eliminar Despesa RH")
@@ -20,9 +21,11 @@ def hr_expense_delete(expense_id, driver_name=None):
         if st.button("Cancelar", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("Confirmar", type="primary", use_container_width=True):
-            with st.spinner("A eliminar despesa...", show_time=True):
-                HRExpenseService.delete_expense(expense_id)
-            st.success("Despesa RH eliminada com sucesso!")
-            time.sleep(1.5)
-            st.switch_page("views/hr_expenses/page.py")
+        btn_delete = st.button("Confirmar", type="primary", use_container_width=True)
+    
+    if btn_delete:
+        with st.spinner("A eliminar despesa...", show_time=True):
+            HRExpenseService.delete_expense(expense_id)
+        st.success("Despesa RH eliminada com sucesso!")
+        time.sleep(1.5)
+        switch_page("views/hr_expenses/page.py")

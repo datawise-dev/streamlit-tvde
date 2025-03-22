@@ -2,6 +2,8 @@ import streamlit as st
 import time
 from services.ga_expense_service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
+from utils.navigation import switch_page
+
 
 @st.dialog("Eliminar Despesa G&A")
 @handle_streamlit_error()
@@ -15,9 +17,11 @@ def ga_expense_delete(expense_id):
         if st.button("Cancelar", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("Confirmar", type="primary", use_container_width=True):
-            with st.spinner("A eliminar despesa...", show_time=True):
-                GAExpenseService.delete_ga_expense(expense_id)
-            st.success("Despesa G&A eliminada com sucesso!")
-            time.sleep(1.5)
-            st.switch_page("views/ga_expenses/page.py")
+        btn_delete = st.button("Confirmar", type="primary", use_container_width=True)
+    
+    if btn_delete:
+        with st.spinner("A eliminar despesa...", show_time=True):
+            GAExpenseService.delete_ga_expense(expense_id)
+        st.success("Despesa G&A eliminada com sucesso!")
+        time.sleep(1.5)
+        switch_page("views/ga_expenses/page.py")

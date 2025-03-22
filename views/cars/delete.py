@@ -2,6 +2,7 @@ import streamlit as st
 import time
 from services.car_service import CarService
 from utils.error_handlers import handle_streamlit_error
+from utils.navigation import switch_page
 
 
 @st.dialog("Eliminar Veículo")
@@ -18,9 +19,11 @@ def car_delete(car_id, license_plate):
         if st.button("Cancelar", use_container_width=True):
             st.rerun()
     with col2:
-        if st.button("Confirmar", type="primary", use_container_width=True):
-            with st.spinner("A eliminar veículo...", show_time=True):
-                CarService.delete_car(car_id)
-            st.success("Veículo eliminado com sucesso!")
-            time.sleep(1.5)
-            st.page_switch("views/cars/page.py")
+        btn_delete = st.button("Confirmar", type="primary", use_container_width=True)
+
+    if btn_delete:
+        with st.spinner("A eliminar veículo...", show_time=True):
+            CarService.delete_car(car_id)
+        st.success("Veículo eliminado com sucesso!")
+        time.sleep(1.5)
+        switch_page("views/cars/page.py")

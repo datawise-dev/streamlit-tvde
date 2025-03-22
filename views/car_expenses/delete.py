@@ -2,6 +2,7 @@ import streamlit as st
 import time
 from services.car_expense_service import CarExpenseService
 from utils.error_handlers import handle_streamlit_error
+from utils.navigation import switch_page
 
 
 @st.dialog("Eliminar Despesa de Veículo")
@@ -21,4 +22,4 @@ def car_expense_delete(expense_id):
                 CarExpenseService.delete_car_expense(expense_id)
             st.success("Despesa de veículo eliminada com sucesso!")
             time.sleep(1.5)
-            st.switch_page("views/car_expenses/page.py")
+            switch_page("views/car_expenses/page.py")
