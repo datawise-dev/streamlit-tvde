@@ -57,33 +57,73 @@ def manual_entry_tab():
 
 def bulk_entry_tab():
     """Display the bulk import interface for adding multiple revenue entries."""
-    # Define standard fields for revenues
-    standard_fields = [
-        "start_date", "end_date", "driver_name", "license_plate",
-        "platform", "gross_revenue", "commission_percentage", "tip",
-        "num_travels", "num_kilometers"
-    ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "start_date": "Data Início",
-        "end_date": "Data Fim",
-        "driver_name": "Nome do Motorista",
-        "license_plate": "Matrícula",
-        "platform": "Plataforma",
-        "gross_revenue": "Receita Bruta",
-        "commission_percentage": "Comissão (%)",
-        "tip": "Gorjeta",
-        "num_travels": "Número de Viagens",
-        "num_kilometers": "Número de Quilómetros"
-    }
-    
-    # Set field constraints
-    field_constraints = {
-        "platform": {
-            "valid_values": ["Uber", "Bolt", "Transfer"]
+    # Define fields configuration for revenues
+    fields_config = [
+        {
+            "key": "start_date",
+            "display_name": "Data Início",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "end_date",
+            "display_name": "Data Fim",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "driver_name",
+            "display_name": "Nome do Motorista",
+            "required": True
+        },
+        {
+            "key": "license_plate",
+            "display_name": "Matrícula", 
+            "required": True,
+            "validators": ["license_plate"]
+        },
+        {
+            "key": "platform",
+            "display_name": "Plataforma",
+            "required": True,
+            "constraints": {"valid_values": ["Uber", "Bolt", "Transfer"]}
+        },
+        {
+            "key": "gross_revenue",
+            "display_name": "Receita Bruta",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "commission_percentage",
+            "display_name": "Comissão (%)",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0, "max_value": 100},
+            "default_value": 0.0
+        },
+        {
+            "key": "tip",
+            "display_name": "Gorjeta",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0},
+            "default_value": 0.0
+        },
+        {
+            "key": "num_travels",
+            "display_name": "Número de Viagens",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0},
+            "default_value": 0
+        },
+        {
+            "key": "num_kilometers",
+            "display_name": "Número de Quilómetros",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0},
+            "default_value": 0.0
         }
-    }
+    ]
     
     # Create help content
     help_content = {
@@ -93,6 +133,7 @@ def bulk_entry_tab():
         - A Data Início não pode ser posterior à Data Fim
         - A Plataforma deve ser uma de: Uber, Bolt, Transfer
         - A Comissão deve estar entre 0 e 100 (%)
+        - A Matrícula deve seguir o formato XX-XX-XX
         """,
         "Campos Obrigatórios": """
         Os campos obrigatórios são:
@@ -109,9 +150,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="receitas",
         service_class=RevenueService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
-        field_constraints=field_constraints,
+        fields_config=fields_config,
         insert_method_name="insert_revenue_data",
         help_content=help_content
     )

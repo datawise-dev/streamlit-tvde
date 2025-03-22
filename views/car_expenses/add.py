@@ -5,6 +5,7 @@ from views.car_expenses.form import car_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 from datetime import date
+from views.car_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single car expense."""
@@ -67,29 +68,52 @@ def manual_entry_tab():
 
 def bulk_entry_tab():
     """Display the bulk import interface for adding multiple car expenses."""
-    # Define standard fields for car expenses
-    standard_fields = [
-        "car_id", "expense_type", "start_date", "end_date", 
-        "amount", "vat", "description"
-    ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "car_id": "ID do Veículo",
-        "expense_type": "Tipo de Despesa",
-        "start_date": "Data de Início",
-        "end_date": "Data de Fim",
-        "amount": "Montante (€)",
-        "vat": "IVA (%)",
-        "description": "Descrição"
-    }
-    
-    # Set field constraints
-    field_constraints = {
-        "expense_type": {
-            "valid_values": ["Credit", "Gasoline", "Tolls", "Repairs", "Washing"]
+    # Define fields configuration for car expenses
+    fields_config = [
+        {
+            "key": "car_id",
+            "display_name": "ID do Veículo",
+            "required": True,
+            "validators": ["numeric"]
+        },
+        {
+            "key": "expense_type",
+            "display_name": "Tipo de Despesa",
+            "required": True,
+            "constraints": {"valid_values": list(EXPENSE_TYPE_MAP_PT_TO_EN.values())}
+        },
+        {
+            "key": "start_date",
+            "display_name": "Data de Início",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "end_date",
+            "display_name": "Data de Fim",
+            "validators": ["date_format"]
+        },
+        {
+            "key": "amount",
+            "display_name": "Montante (€)",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "vat",
+            "display_name": "IVA (%)",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0, "max_value": 100},
+            "default_value": 23.0
+        },
+        {
+            "key": "description",
+            "display_name": "Descrição",
+            "validators": ["max_length"],
+            "constraints": {"max_length": 500}
         }
-    }
+    ]
     
     # Create help content
     help_content = {
@@ -98,17 +122,15 @@ def bulk_entry_tab():
         - As datas estão no formato YYYY-MM-DD
         - A Data de Início não pode ser posterior à Data de Fim
         - O ID do Veículo deve corresponder a um veículo existente no sistema
-        - O Tipo de Despesa deve ser um de: Credit, Gasoline, Tolls, Repairs, Washing
+        - O Tipo de Despesa deve ser um dos valores válidos
         - Para despesas do tipo 'Credit', a Data de Fim é obrigatória
         - Os valores monetários devem usar o ponto como separador decimal
         """,
-        "Tipos de Despesa": """
+        "Tipos de Despesa": f"""
         Os tipos de despesa disponíveis são:
-        - Credit (Crédito)
-        - Gasoline (Combustível)
-        - Tolls (Portagens)
-        - Repairs (Reparações)
-        - Washing (Lavagem)
+        {', '.join([f"- {en} ({pt})" for pt, en in EXPENSE_TYPE_MAP_PT_TO_EN.items()])}
+        
+        Nota: Use os valores em inglês na coluna do tipo de despesa.
         """
     }
     
@@ -116,9 +138,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="despesas de veículos",
         service_class=CarExpenseService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
-        field_constraints=field_constraints,
+        fields_config=fields_config,
         insert_method_name="insert_car_expense",
         help_content=help_content
     )

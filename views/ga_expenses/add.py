@@ -60,29 +60,51 @@ def manual_entry_tab():
 
 def bulk_entry_tab():
     """Display the bulk import interface for adding multiple G&A expenses."""
-    # Define standard fields for G&A expenses
-    standard_fields = [
-        "expense_type", "start_date", "end_date", "payment_date",
-        "amount", "vat", "description"
-    ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "expense_type": "Tipo de Despesa",
-        "start_date": "Data de Início",
-        "end_date": "Data de Fim",
-        "payment_date": "Data de Pagamento",
-        "amount": "Montante (€)",
-        "vat": "IVA (%)",
-        "description": "Descrição"
-    }
-    
-    # Set field constraints
-    field_constraints = {
-        "expense_type": {
-            "valid_values": list(EXPENSE_TYPE_MAP_PT_TO_EN.values())
+    # Define fields configuration for G&A expenses
+    fields_config = [
+        {
+            "key": "expense_type",
+            "display_name": "Tipo de Despesa",
+            "required": True,
+            "constraints": {"valid_values": list(EXPENSE_TYPE_MAP_PT_TO_EN.values())}
+        },
+        {
+            "key": "start_date",
+            "display_name": "Data de Início",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "end_date",
+            "display_name": "Data de Fim",
+            "validators": ["date_format"]
+        },
+        {
+            "key": "payment_date",
+            "display_name": "Data de Pagamento",
+            "validators": ["date_format"]
+        },
+        {
+            "key": "amount",
+            "display_name": "Montante (€)",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "vat",
+            "display_name": "IVA (%)",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0, "max_value": 100},
+            "default_value": 23.0
+        },
+        {
+            "key": "description",
+            "display_name": "Descrição",
+            "validators": ["max_length"],
+            "constraints": {"max_length": 500}
         }
-    }
+    ]
     
     # Create help content
     help_content = {
@@ -105,9 +127,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="despesas G&A",
         service_class=GAExpenseService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
-        field_constraints=field_constraints,
+        fields_config=fields_config,
         insert_method_name="insert_ga_expense",
         help_content=help_content
     )

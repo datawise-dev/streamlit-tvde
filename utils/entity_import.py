@@ -8,31 +8,51 @@ logger = logging.getLogger(__name__)
 
 def create_generic_validator(
     service_class: Type[BaseService],
-    field_constraints: Dict[str, Dict[str, Any]] = None,
+    fields_config: List[Dict[str, Any]] = None,
 ) -> Callable:
     """
     Creates a generic validator function for entity records based on the service class's validate method.
     
     Args:
         service_class: The service class that has a validate method
-        field_constraints: Additional constraints for specific fields (e.g., valid categories)
+        fields_config: List of field configurations with constraints and validation rules
         
     Returns:
         A validator function that takes a record and returns (is_valid, error_messages)
     """
     def validator(record: Dict) -> Tuple[bool, List[str]]:
-        # Apply additional field constraints if provided
-        if field_constraints:
-            for field, constraints in field_constraints.items():
-                if field in record and record[field] is not None:
-                    if 'valid_values' in constraints and record[field] not in constraints['valid_values']:
-                        return False, [f"{field} must be one of: {', '.join(constraints['valid_values'])}"]
-        
-        # Add default values for missing fields if needed
-        if hasattr(service_class, 'DEFAULT_VALUES'):
-            for field, value in service_class.DEFAULT_VALUES.items():
+        # Apply field constraints if provided
+        if fields_config:
+            for field_def in fields_config:
+                field = field_def.get('key')
+                
+                # Skip if field is not in record
                 if field not in record:
-                    record[field] = value
+                    continue
+                
+                # Apply constraints defined in field configuration
+                constraints = field_def.get('constraints', {})
+                if constraints and record[field] is not None:
+                    # Check valid values constraint
+                    if 'valid_values' in constraints and record[field] not in constraints['valid_values']:
+                        valid_values = constraints['valid_values']
+                        return False, [f"{field} must be one of: {', '.join(str(v) for v in valid_values)}"]
+                    
+                    # Check min_value constraint
+                    if 'min_value' in constraints:
+                        try:
+                            value = float(record[field])
+                            if value < constraints['min_value']:
+                                return False, [f"{field} must be at least {constraints['min_value']}"]
+                        except (ValueError, TypeError):
+                            pass  # Let service validation handle type errors
+        
+        # Add default values for missing fields
+        if fields_config:
+            for field_def in fields_config:
+                field = field_def.get('key')
+                if field not in record and 'default_value' in field_def:
+                    record[field] = field_def['default_value']
         
         # Use the service class's validate method
         return service_class.validate(record)
@@ -80,9 +100,7 @@ def create_generic_uploader(service_class: Type[BaseService], insert_method_name
 def entity_bulk_import_tab(
     entity_name: str,
     service_class: Type[BaseService],
-    standard_fields: List[str],
-    field_display_names: Dict[str, str],
-    field_constraints: Dict[str, Dict[str, Any]] = None,
+    fields_config: List[Dict[str, Any]],
     insert_method_name: str = None,
     help_content: Dict[str, str] = None
 ):
@@ -92,9 +110,7 @@ def entity_bulk_import_tab(
     Args:
         entity_name: Name of the entity (e.g., "cars", "drivers")
         service_class: The service class for the entity
-        standard_fields: List of standard field names
-        field_display_names: Dictionary mapping field names to display names
-        field_constraints: Additional constraints for specific fields
+        fields_config: List of field configurations with key, display_name, validators, etc.
         insert_method_name: Name of the insert method (defaults to "insert_{entity_name[:-1]}")
         help_content: Optional help content to display in expanders
     """
@@ -105,17 +121,16 @@ def entity_bulk_import_tab(
         insert_method_name = f"insert_{entity_singular}"
     
     # Create validator and uploader functions
-    validator = create_generic_validator(service_class, field_constraints)
+    validator = create_generic_validator(service_class, fields_config)
     uploader = create_generic_uploader(service_class, insert_method_name)
     
     # Use the bulk import component
     with st.container(border=1):
         bulk_import_component(
             entity_name=entity_name,
-            standard_fields=standard_fields,
+            fields_config=fields_config,
             validation_function=validator,
-            upload_function=uploader,
-            field_display_names=field_display_names
+            upload_function=uploader
         )
     
     # Display help content if provided

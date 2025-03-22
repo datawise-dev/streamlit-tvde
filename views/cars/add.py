@@ -49,31 +49,50 @@ def manual_entry_tab():
             st.error(str(e))
 
 def bulk_entry_tab():
-    # Define standard fields for cars
-    standard_fields = [
-        "license_plate", "brand", "model", "acquisition_cost", 
-        "acquisition_date", "category"
-    ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "license_plate": "Matrícula",
-        "brand": "Marca",
-        "model": "Modelo",
-        "acquisition_cost": "Custo de Aquisição (€)",
-        "acquisition_date": "Data de Aquisição",
-        "category": "Categoria",
-    }
-    
-    # Set field constraints
-    field_constraints = {
-        "category": {
-            "valid_values": ["Economy", "Standard", "Premium", "Luxury"]
+    # Define fields configuration for cars
+    fields_config = [
+        {
+            "key": "license_plate",
+            "display_name": "Matrícula",
+            "required": True,
+            "validators": ["license_plate"]
         },
-        "is_active": {
-            "default": True
+        {
+            "key": "brand",
+            "display_name": "Marca",
+            "required": True
+        },
+        {
+            "key": "model",
+            "display_name": "Modelo",
+            "required": True
+        },
+        {
+            "key": "acquisition_cost",
+            "display_name": "Custo de Aquisição (€)",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "acquisition_date",
+            "display_name": "Data de Aquisição",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "category",
+            "display_name": "Categoria",
+            "required": True,
+            "constraints": {"valid_values": ["Economy", "Standard", "Premium", "Luxury"]},
+            "default_value": "Standard"
+        },
+        {
+            "key": "is_active",
+            "display_name": "Ativo",
+            "default_value": True
         }
-    }
+    ]
     
     # Create help content
     help_content = {
@@ -92,9 +111,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="veículos",
         service_class=CarService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
-        field_constraints=field_constraints,
+        fields_config=fields_config,
         insert_method_name="insert_car",
         help_content=help_content
     )

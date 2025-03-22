@@ -66,25 +66,67 @@ def manual_entry_tab():
 
 def bulk_entry_tab():
     """Display the bulk import interface for adding multiple HR expenses."""
-    # Define standard fields for HR expenses
-    standard_fields = [
-        "driver_id", "start_date", "end_date", "payment_date",
-        "base_salary", "working_days", "meal_allowance_per_day", 
-        "other_benefits", "notes"
+    # Define fields configuration for HR expenses
+    fields_config = [
+        {
+            "key": "driver_id",
+            "display_name": "ID do Motorista",
+            "required": True,
+            "validators": ["numeric"]
+        },
+        {
+            "key": "start_date",
+            "display_name": "Data de Início",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "end_date",
+            "display_name": "Data de Fim",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "payment_date",
+            "display_name": "Data de Pagamento",
+            "required": True,
+            "validators": ["date_format"]
+        },
+        {
+            "key": "base_salary",
+            "display_name": "Salário Base (€)",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "working_days",
+            "display_name": "Dias Úteis Trabalhados",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "meal_allowance_per_day",
+            "display_name": "Subsídio de Alimentação / Dia (€)",
+            "required": True,
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0}
+        },
+        {
+            "key": "other_benefits",
+            "display_name": "Outros Benefícios (€)",
+            "validators": ["numeric"],
+            "constraints": {"min_value": 0},
+            "default_value": 0.0
+        },
+        {
+            "key": "notes",
+            "display_name": "Notas",
+            "validators": ["max_length"],
+            "constraints": {"max_length": 500}
+        }
     ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "driver_id": "ID do Motorista",
-        "start_date": "Data de Início",
-        "end_date": "Data de Fim",
-        "payment_date": "Data de Pagamento",
-        "base_salary": "Salário Base (€)",
-        "working_days": "Dias Úteis Trabalhados",
-        "meal_allowance_per_day": "Subsídio de Alimentação / Dia (€)",
-        "other_benefits": "Outros Benefícios (€)",
-        "notes": "Notas"
-    }
     
     # Create help content
     help_content = {
@@ -111,8 +153,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="despesas RH",
         service_class=HRExpenseService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
+        fields_config=fields_config,
         insert_method_name="insert_expense",
         help_content=help_content
     )

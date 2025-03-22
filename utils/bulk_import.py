@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import tempfile
 import os
-from typing import Dict, List, Callable, Tuple, Optional
+from typing import Dict, List, Callable, Tuple, Optional, Any
 import logging
 from utils.error_handlers import handle_streamlit_error
 
@@ -75,16 +75,14 @@ def display_data_preview(df: pd.DataFrame, rows: int = 10) -> None:
 
 def column_mapping_ui(
     file_columns: List[str], 
-    standard_fields: List[str], 
-    field_display_names: Dict[str, str]
+    fields_config: List[Dict[str, Any]]
 ) -> Dict[str, str]:
     """
     Create UI for mapping file columns to standard fields.
     
     Args:
         file_columns: List of column names from the uploaded file
-        standard_fields: List of standard field names for the entity
-        field_display_names: Dictionary mapping field names to display names
+        fields_config: List of field configurations with key, display_name, etc.
         
     Returns:
         Dictionary mapping standard fields to file columns
@@ -95,8 +93,10 @@ def column_mapping_ui(
     column_mapping = {}
 
     # Create two-column layout for each field mapping
-    for field in standard_fields:
-        display_name = field_display_names.get(field, field)
+    for field_def in fields_config:
+        field = field_def.get('key')
+        display_name = field_def.get('display_name', field)
+        required = field_def.get('required', False)
 
         # Try to find a matching column automatically
         default_index = 0
@@ -113,9 +113,7 @@ def column_mapping_ui(
 
         with col1:
             # Right-align the label with HTML (add asterisk for required fields)
-            required_marker = (
-                " *" if field in standard_fields[:4] else ""
-            )  # Example: mark first 4 fields as required
+            required_marker = " *" if required else ""
             st.markdown(
                 f"<div style='text-align: right'><strong>{display_name}{required_marker}</strong></div>",
                 unsafe_allow_html=True,
@@ -138,29 +136,33 @@ def column_mapping_ui(
 
 def validate_mapping(
     column_mapping: Dict[str, str], 
-    standard_fields: List[str], 
-    field_display_names: Dict[str, str]
+    fields_config: List[Dict[str, Any]]
 ) -> Tuple[bool, List[str]]:
     """
     Validate that all required fields have been mapped.
     
     Args:
         column_mapping: Dictionary mapping standard fields to file columns
-        standard_fields: List of standard field names for the entity
-        field_display_names: Dictionary mapping field names to display names
+        fields_config: List of field configurations with key, display_name, etc.
         
     Returns:
         Tuple of (is_valid, error_messages)
     """
-    # Validate column mapping
+    # Get required fields
+    required_fields = [field_def.get('key') for field_def in fields_config 
+                       if field_def.get('required', False)]
+    
+    # Validate that all required fields are mapped
     missing_required_fields = [
-        field for field in standard_fields if field not in column_mapping
+        field for field in required_fields if field not in column_mapping
     ]
     
     if missing_required_fields:
         # Convert field names to display names for error message
         missing_field_names = [
-            field_display_names.get(field, field) for field in missing_required_fields
+            next((field_def.get('display_name', field) 
+                 for field_def in fields_config if field_def.get('key') == field), field)
+            for field in missing_required_fields
         ]
         return False, missing_field_names
     
@@ -222,7 +224,8 @@ def process_row(
 def validate_and_process_data(
     df: pd.DataFrame,
     column_mapping: Dict[str, str],
-    validation_function: Callable
+    validation_function: Callable,
+    fields_config: List[Dict[str, Any]]
 ) -> Tuple[List[Dict], List[Dict]]:
     """
     Validate and process all data rows.
@@ -231,6 +234,7 @@ def validate_and_process_data(
         df: DataFrame containing the data to process
         column_mapping: Dictionary mapping standard fields to file columns
         validation_function: Function that validates a data record
+        fields_config: List of field configurations with key, display_name, validators, etc.
         
     Returns:
         Tuple of (valid_records, error_records)
@@ -245,6 +249,12 @@ def validate_and_process_data(
         for index, row in df.iterrows():
             # Process the row
             record = process_row(row, column_mapping, index)
+            
+            # Apply default values for fields not in the data
+            for field_def in fields_config:
+                field = field_def.get('key')
+                if field not in record and 'default_value' in field_def:
+                    record[field] = field_def['default_value']
             
             # Validate the record
             is_valid, error_messages = validation_function(record)
@@ -398,23 +408,21 @@ def load_excel_sheet(uploaded_file, sheet_index: int = 0) -> pd.DataFrame:
 @handle_streamlit_error()
 def bulk_import_component(
     entity_name: str,
-    standard_fields: List[str],
+    fields_config: List[Dict[str, Any]],
     validation_function: Callable,
     upload_function: Callable,
-    field_display_names: Dict[str, str] = None,
 ):
     """
     Reusable component for bulk import across different entities.
 
     Args:
         entity_name: Name of the entity being imported (e.g., "receitas", "motoristas")
-        standard_fields: List of standard field names for the entity
+        fields_config: List of field configurations with key, display_name, validators, etc.
         validation_function: Function that validates a data record
         upload_function: Function that uploads validated data
-        field_display_names: Dictionary mapping field names to display names
     """
-    if field_display_names is None:
-        field_display_names = {field: field for field in standard_fields}
+    # Extract standard fields from fields_config
+    standard_fields = [field_def.get('key') for field_def in fields_config]
 
     st.subheader(f"Importação em Massa de {entity_name.capitalize()}")
 
@@ -459,19 +467,19 @@ def bulk_import_component(
         
         # Set up column mapping
         file_columns = ["-- Não Mapear --"] + list(df.columns)
-        column_mapping = column_mapping_ui(file_columns, standard_fields, field_display_names)
+        column_mapping = column_mapping_ui(file_columns, fields_config)
         
         # Process button
         if st.button("Processar e Importar Dados", use_container_width=True):
             # Validate mapping
-            is_valid, missing_fields = validate_mapping(column_mapping, standard_fields, field_display_names)
+            is_valid, missing_fields = validate_mapping(column_mapping, fields_config)
             if not is_valid:
                 st.error(f"Campos obrigatórios não mapeados: {', '.join(missing_fields)}")
                 return
                 
             # Process and validate data
             valid_records, error_records = validate_and_process_data(
-                df, column_mapping, validation_function
+                df, column_mapping, validation_function, fields_config
             )
             
             # Display validation results

@@ -31,30 +31,52 @@ def manual_entry_tab():
 
 def bulk_entry_tab():
     """Display the bulk import interface for adding multiple drivers."""
-    # Define standard fields for drivers
-    standard_fields = [
-        "display_name", "first_name", "last_name", "nif", 
-        "address_line1", "address_line2", "postal_code", "location"
-    ]
-    
-    # Map field names to friendly display names
-    field_display_names = {
-        "display_name": "Nome de Exibição",
-        "first_name": "Nome",
-        "last_name": "Apelido",
-        "nif": "NIF",
-        "address_line1": "Morada (Linha 1)",
-        "address_line2": "Morada (Linha 2)",
-        "postal_code": "Código Postal",
-        "location": "Localidade",
-    }
-    
-    # Set field constraints and defaults
-    field_constraints = {
-        "is_active": {
-            "default": True
+    # Define fields configuration for drivers
+    fields_config = [
+        {
+            "key": "display_name",
+            "display_name": "Nome de Exibição",
+            "required": True
+        },
+        {
+            "key": "first_name",
+            "display_name": "Nome",
+            "required": True
+        },
+        {
+            "key": "last_name",
+            "display_name": "Apelido",
+            "required": True
+        },
+        {
+            "key": "nif",
+            "display_name": "NIF",
+            "required": True,
+            "validators": ["nif"]
+        },
+        {
+            "key": "address_line1",
+            "display_name": "Morada (Linha 1)"
+        },
+        {
+            "key": "address_line2",
+            "display_name": "Morada (Linha 2)"
+        },
+        {
+            "key": "postal_code",
+            "display_name": "Código Postal",
+            "validators": ["postal_code"]
+        },
+        {
+            "key": "location",
+            "display_name": "Localidade"
+        },
+        {
+            "key": "is_active",
+            "display_name": "Ativo",
+            "default_value": True
         }
-    }
+    ]
     
     # Create help content
     help_content = {
@@ -77,9 +99,7 @@ def bulk_entry_tab():
     entity_bulk_import_tab(
         entity_name="motoristas",
         service_class=DriverService,
-        standard_fields=standard_fields,
-        field_display_names=field_display_names,
-        field_constraints=field_constraints,
+        fields_config=fields_config,
         insert_method_name="insert_driver",
         help_content=help_content
     )
