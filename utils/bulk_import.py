@@ -2,11 +2,310 @@ import streamlit as st
 import pandas as pd
 import tempfile
 import os
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Tuple, Optional
 import logging
 from utils.error_handlers import handle_streamlit_error
 
 logger = logging.getLogger(__name__)
+
+
+def load_file(uploaded_file) -> Optional[pd.DataFrame]:
+    """
+    Load data from an uploaded file into a pandas DataFrame.
+    
+    Args:
+        uploaded_file: The file uploaded through Streamlit's file_uploader
+        
+    Returns:
+        DataFrame containing the file data or None if an error occurs
+    """
+    try:
+        # Create a temporary file to store the uploaded content
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=os.path.splitext(uploaded_file.name)[1]
+        ) as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_filepath = tmp_file.name
+
+        # Read the file based on its extension
+        if uploaded_file.name.endswith(".csv"):
+            df = pd.read_csv(tmp_filepath)
+        else:  # Excel file
+            df = pd.read_excel(tmp_filepath)
+
+        # Clean up the temporary file
+        os.unlink(tmp_filepath)
+        
+        return df
+    except Exception as e:
+        st.error(f"Erro ao processar o ficheiro: {str(e)}")
+        logger.exception("Error loading file")
+        return None
+
+
+def display_data_preview(df: pd.DataFrame, rows: int = 10) -> None:
+    """
+    Display a preview of the DataFrame.
+    
+    Args:
+        df: DataFrame to preview
+        rows: Number of rows to show in the preview
+    """
+    st.subheader("Pré-visualização dos Dados")
+    st.dataframe(df.head(rows), hide_index=True)
+
+
+def column_mapping_ui(
+    file_columns: List[str], 
+    standard_fields: List[str], 
+    field_display_names: Dict[str, str]
+) -> Dict[str, str]:
+    """
+    Create UI for mapping file columns to standard fields.
+    
+    Args:
+        file_columns: List of column names from the uploaded file
+        standard_fields: List of standard field names for the entity
+        field_display_names: Dictionary mapping field names to display names
+        
+    Returns:
+        Dictionary mapping standard fields to file columns
+    """
+    st.subheader("Mapeamento de Colunas")
+    st.write("Associe as colunas do seu ficheiro aos campos necessários:")
+    
+    column_mapping = {}
+
+    # Create two-column layout for each field mapping
+    for field in standard_fields:
+        display_name = field_display_names.get(field, field)
+
+        # Try to find a matching column automatically
+        default_index = 0
+        for i, col in enumerate(file_columns):
+            if (
+                col.lower().replace(" ", "_") == field.lower()
+                or col.lower() == field.lower()
+            ):
+                default_index = i
+                break
+
+        # Create a two-column layout for each field
+        col1, col2 = st.columns([2, 3])
+
+        with col1:
+            # Right-align the label with HTML (add asterisk for required fields)
+            required_marker = (
+                " *" if field in standard_fields[:4] else ""
+            )  # Example: mark first 4 fields as required
+            st.markdown(
+                f"<div style='text-align: right'><strong>{display_name}{required_marker}:</strong></div>",
+                unsafe_allow_html=True,
+            )
+
+        with col2:
+            selected_column = st.selectbox(
+                label="",  # Empty label since we're using the column to the left
+                options=file_columns,
+                index=default_index,
+                key=f"mapping_{field}",
+                label_visibility="collapsed",
+            )
+
+        if selected_column != "-- Não Mapear --":
+            column_mapping[field] = selected_column
+
+    return column_mapping
+
+
+def validate_mapping(
+    column_mapping: Dict[str, str], 
+    standard_fields: List[str], 
+    field_display_names: Dict[str, str]
+) -> Tuple[bool, List[str]]:
+    """
+    Validate that all required fields have been mapped.
+    
+    Args:
+        column_mapping: Dictionary mapping standard fields to file columns
+        standard_fields: List of standard field names for the entity
+        field_display_names: Dictionary mapping field names to display names
+        
+    Returns:
+        Tuple of (is_valid, error_messages)
+    """
+    # Validate column mapping
+    missing_required_fields = [
+        field for field in standard_fields if field not in column_mapping
+    ]
+    
+    if missing_required_fields:
+        # Convert field names to display names for error message
+        missing_field_names = [
+            field_display_names.get(field, field) for field in missing_required_fields
+        ]
+        return False, missing_field_names
+    
+    return True, []
+
+
+def process_row(
+    row: pd.Series, 
+    column_mapping: Dict[str, str], 
+    index: int
+) -> Dict[str, any]:
+    """
+    Process a single row of data from the DataFrame.
+    
+    Args:
+        row: Pandas Series representing a single row of data
+        column_mapping: Dictionary mapping standard fields to file columns
+        index: Row index for error reporting
+        
+    Returns:
+        Dictionary containing processed field values
+    """
+    record = {}
+
+    # Map the columns to fields
+    for field, column in column_mapping.items():
+        # Handle both numerical and non-numerical fields
+        if pd.isna(row[column]):
+            record[field] = None
+        else:
+            # Handle date columns specially
+            if field in [
+                "start_date",
+                "end_date",
+                "payment_date",
+                "acquisition_date",
+            ]:
+                try:
+                    # Try to convert to ISO date format string
+                    if isinstance(row[column], str):
+                        date_obj = pd.to_datetime(row[column])
+                        record[field] = date_obj.strftime("%Y-%m-%d")
+                    elif pd.notna(row[column]):
+                        # Handle pandas Timestamp or datetime
+                        record[field] = row[column].strftime("%Y-%m-%d")
+                    else:
+                        record[field] = None
+                except Exception as e:
+                    logger.error(
+                        f"Error parsing date in row {index+2}, column {column}: {str(e)}"
+                    )
+                    record[field] = row[column]  # Let validation catch this
+            else:
+                record[field] = row[column]
+                
+    return record
+
+
+def validate_and_process_data(
+    df: pd.DataFrame,
+    column_mapping: Dict[str, str],
+    validation_function: Callable
+) -> Tuple[List[Dict], List[Dict]]:
+    """
+    Validate and process all data rows.
+    
+    Args:
+        df: DataFrame containing the data to process
+        column_mapping: Dictionary mapping standard fields to file columns
+        validation_function: Function that validates a data record
+        
+    Returns:
+        Tuple of (valid_records, error_records)
+    """
+    valid_records = []
+    error_records = []
+
+    with st.spinner("A validar dados..."):
+        progress_bar = st.progress(0)
+        total_rows = len(df)
+
+        for index, row in df.iterrows():
+            # Process the row
+            record = process_row(row, column_mapping, index)
+            
+            # Validate the record
+            is_valid, error_messages = validation_function(record)
+
+            if is_valid:
+                valid_records.append(record)
+            else:
+                error_info = {
+                    "row": index + 2,  # +2 because index starts at 0 and we have header row
+                    "errors": error_messages,
+                }
+                error_records.append(error_info)
+
+            # Update progress
+            progress_bar.progress((index + 1) / total_rows)
+            
+    return valid_records, error_records
+
+
+def display_validation_results(valid_records: List[Dict], error_records: List[Dict]) -> bool:
+    """
+    Display validation results and return whether to proceed with import.
+    
+    Args:
+        valid_records: List of valid data records
+        error_records: List of records with validation errors
+        
+    Returns:
+        Boolean indicating whether to proceed with import
+    """
+    if error_records:
+        st.error(f"Encontrados {len(error_records)} erros de validação:")
+
+        # Create an expander for errors to avoid cluttering the UI
+        with st.expander("Ver detalhes dos erros"):
+            for error in error_records:
+                st.warning(f"Linha {error['row']}: {'; '.join(error['errors'])}")
+
+        st.warning("Corrija os erros no ficheiro e tente novamente.")
+
+        # Show records with errors vs. valid records
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Registos Válidos", len(valid_records))
+        with col2:
+            st.metric("Registos com Erros", len(error_records))
+            
+        return False
+    
+    elif len(valid_records) == 0:
+        st.warning("Não foram encontrados registos válidos para importar.")
+        return False
+    
+    return True
+
+
+def import_data(valid_records: List[Dict], upload_function: Callable) -> bool:
+    """
+    Import validated records using the provided upload function.
+    
+    Args:
+        valid_records: List of valid data records
+        upload_function: Function that uploads validated data
+        
+    Returns:
+        Boolean indicating whether import was successful
+    """
+    with st.spinner(f"A importar {len(valid_records)} registos..."):
+        try:
+            upload_function(valid_records)
+            st.success(f"{len(valid_records)} registos importados com sucesso!")
+
+            # Display summary
+            st.metric("Total de Registos Processados", len(valid_records))
+            return True
+        except Exception as e:
+            st.error(f"Erro ao importar dados: {str(e)}")
+            return False
+
 
 @handle_streamlit_error()
 def bulk_import_component(
@@ -18,7 +317,7 @@ def bulk_import_component(
 ):
     """
     Reusable component for bulk import across different entities.
-    
+
     Args:
         entity_name: Name of the entity being imported (e.g., "receitas", "motoristas")
         standard_fields: List of standard field names for the entity
@@ -28,186 +327,69 @@ def bulk_import_component(
     """
     if field_display_names is None:
         field_display_names = {field: field for field in standard_fields}
-    
+
     st.subheader(f"Importação em Massa de {entity_name.capitalize()}")
-    
+
     # File upload
     uploaded_file = st.file_uploader(
         f"Carregue um ficheiro CSV ou Excel com os dados de {entity_name}",
         type=["csv", "xlsx", "xls"],
-        help=f"O ficheiro deve conter colunas correspondentes aos campos necessários para {entity_name}."
+        help=f"O ficheiro deve conter colunas correspondentes aos campos necessários para {entity_name}.",
     )
-    
-    if uploaded_file is not None:
-        # Process the file
-        try:
-            # Create a temporary file to store the uploaded content
-            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
-                tmp_file.write(uploaded_file.getvalue())
-                tmp_filepath = tmp_file.name
-            
-            # Read the file based on its extension
-            if uploaded_file.name.endswith('.csv'):
-                df = pd.read_csv(tmp_filepath)
-            else:  # Excel file
-                df = pd.read_excel(tmp_filepath)
-            
-            # Clean up the temporary file
-            os.unlink(tmp_filepath)
-            
-            # Preview the data
-            st.subheader("Pré-visualização dos Dados")
-            st.dataframe(df.head(10), hide_index=True)
-            
-            # Column mapping
-            st.subheader("Mapeamento de Colunas")
-            st.write("Associe as colunas do seu ficheiro aos campos necessários:")
-            
-            column_mapping = {}
-            file_columns = ["-- Não Mapear --"] + list(df.columns)
-            
-            # Create two-column layout for each field mapping
-            for field in standard_fields:
-                display_name = field_display_names.get(field, field)
-                
-                # Try to find a matching column automatically
-                default_index = 0
-                for i, col in enumerate(file_columns):
-                    if col.lower().replace(" ", "_") == field.lower() or col.lower() == field.lower():
-                        default_index = i
-                        break
-                
-                # Create a two-column layout for each field
-                col1, col2 = st.columns([2, 3])
-                
-                with col1:
-                    # Right-align the label with HTML (add asterisk for required fields)
-                    required_marker = " *" if field in standard_fields[:4] else ""  # Example: mark first 4 fields as required
-                    st.markdown(f"<div style='text-align: right'><strong>{display_name}{required_marker}:</strong></div>", unsafe_allow_html=True)
-                
-                with col2:
-                    selected_column = st.selectbox(
-                        label="",  # Empty label since we're using the column to the left
-                        options=file_columns,
-                        index=default_index,
-                        key=f"mapping_{field}",
-                        label_visibility='collapsed'
-                    )
-                
-                if selected_column != "-- Não Mapear --":
-                    column_mapping[field] = selected_column
-            
-            # Process button
-            if st.button("Processar e Importar Dados", use_container_width=True):
-                # Validate column mapping
-                missing_required_fields = [field for field in standard_fields if field not in column_mapping]
-                if missing_required_fields:
-                    # Convert field names to display names for error message
-                    missing_field_names = [field_display_names.get(field, field) for field in missing_required_fields]
-                    st.error(f"Campos obrigatórios não mapeados: {', '.join(missing_field_names)}")
-                    return
-                
-                # Process and validate each row
-                records = []
-                errors = []
-                
-                with st.spinner("A validar dados..."):
-                    progress_bar = st.progress(0)
-                    total_rows = len(df)
-                    
-                    for index, row in df.iterrows():
-                        record = {}
-                        
-                        # Map the columns to fields
-                        for field, column in column_mapping.items():
-                            # Handle both numerical and non-numerical fields
-                            if pd.isna(row[column]):
-                                record[field] = None
-                            else:
-                                # Handle date columns specially
-                                if field in ['start_date', 'end_date', 'payment_date', 'acquisition_date']:
-                                    try:
-                                        # Try to convert to ISO date format string
-                                        if isinstance(row[column], str):
-                                            date_obj = pd.to_datetime(row[column])
-                                            record[field] = date_obj.strftime('%Y-%m-%d')
-                                        elif pd.notna(row[column]):
-                                            # Handle pandas Timestamp or datetime
-                                            record[field] = row[column].strftime('%Y-%m-%d')
-                                        else:
-                                            record[field] = None
-                                    except Exception as e:
-                                        logger.error(f"Error parsing date in row {index+2}, column {column}: {str(e)}")
-                                        record[field] = row[column]  # Let validation catch this
-                                else:
-                                    record[field] = row[column]
-                        
-                        # Validate the record
-                        is_valid, error_messages = validation_function(record)
-                        
-                        if is_valid:
-                            records.append(record)
-                        else:
-                            error_info = {
-                                "row": index + 2,  # +2 because index starts at 0 and we have header row
-                                "errors": error_messages
-                            }
-                            errors.append(error_info)
-                        
-                        # Update progress
-                        progress_bar.progress((index + 1) / total_rows)
-                
-                # Display validation results
-                if errors:
-                    st.error(f"Encontrados {len(errors)} erros de validação:")
-                    
-                    # Create an expander for errors to avoid cluttering the UI
-                    with st.expander("Ver detalhes dos erros"):
-                        for error in errors:
-                            st.warning(f"Linha {error['row']}: {'; '.join(error['errors'])}")
-                    
-                    st.warning("Corrija os erros no ficheiro e tente novamente.")
-                    
-                    # Show records with errors vs. valid records
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric("Registos Válidos", len(records))
-                    with col2:
-                        st.metric("Registos com Erros", len(errors))
-                        
-                elif len(records) == 0:
-                    st.warning("Não foram encontrados registos válidos para importar.")
-                else:
-                    # All data is valid, proceed with import
-                    with st.spinner(f"A importar {len(records)} registos..."):
-                        try:
-                            upload_function(records)
-                            st.success(f"{len(records)} registos importados com sucesso!")
-                            
-                            # Display summary
-                            st.metric("Total de Registos Processados", len(records))
-                        except Exception as e:
-                            st.error(f"Erro ao importar dados: {str(e)}")
-                
-        except Exception as e:
-            st.error(f"Erro ao processar o ficheiro: {str(e)}")
-            logger.exception("Error in bulk import")
 
-def get_sample_csv_template(field_names: List[str], field_display_names: Dict[str, str] = None) -> str:
+    if uploaded_file is not None:
+        # Load the file
+        df = load_file(uploaded_file)
+        if df is None:
+            return
+            
+        # Display data preview
+        display_data_preview(df)
+        
+        # Set up column mapping
+        file_columns = ["-- Não Mapear --"] + list(df.columns)
+        column_mapping = column_mapping_ui(file_columns, standard_fields, field_display_names)
+        
+        # Process button
+        if st.button("Processar e Importar Dados", use_container_width=True):
+            # Validate mapping
+            is_valid, missing_fields = validate_mapping(column_mapping, standard_fields, field_display_names)
+            if not is_valid:
+                st.error(f"Campos obrigatórios não mapeados: {', '.join(missing_fields)}")
+                return
+                
+            # Process and validate data
+            valid_records, error_records = validate_and_process_data(
+                df, column_mapping, validation_function
+            )
+            
+            # Display validation results
+            proceed = display_validation_results(valid_records, error_records)
+            
+            # Import data if validation passed
+            if proceed:
+                import_data(valid_records, upload_function)
+
+
+def get_sample_csv_template(
+    field_names: List[str], field_display_names: Dict[str, str] = None
+) -> str:
     """
     Generate a sample CSV template with headers based on the required field names.
-    
+
     Args:
         field_names: List of field names for the entity
         field_display_names: Dictionary mapping field names to display names
-        
+
     Returns:
         CSV content as a string
     """
     if field_display_names is None:
         field_display_names = {field: field for field in field_names}
-    
-    header_row = ",".join([field_display_names.get(field, field) for field in field_names])
+
+    header_row = ",".join(
+        [field_display_names.get(field, field) for field in field_names]
+    )
     sample_row = ",".join([""] * len(field_names))
-    
+
     return f"{header_row}\n{sample_row}"
