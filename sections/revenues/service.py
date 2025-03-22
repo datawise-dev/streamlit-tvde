@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple, Optional
 import pandas as pd
 from psycopg2.extras import execute_values
 from database.connection import get_db_connection, get_db_engine
-from services.base_service import BaseService
+from utils.base_service import BaseService
 from utils.validators import validate_data, get_revenue_validators
 from utils.error_handlers import handle_service_error
 

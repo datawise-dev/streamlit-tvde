@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.car_service import CarService
+from sections.cars.service import CarService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 

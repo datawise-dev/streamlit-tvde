@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from services.driver_service import DriverService
+from sections.drivers.service import DriverService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 from sections.drivers.delete import driver_delete

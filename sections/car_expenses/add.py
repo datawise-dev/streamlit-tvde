@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.car_expense_service import CarExpenseService
+from sections.car_expenses.service import CarExpenseService
 from sections.car_expenses.form import car_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab

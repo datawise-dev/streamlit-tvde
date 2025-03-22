@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.ga_expense_service import GAExpenseService
+from sections.ga_expenses.service import GAExpenseService
 from sections.ga_expenses.form import ga_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab

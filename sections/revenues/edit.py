@@ -1,5 +1,5 @@
 import streamlit as st
-from services.revenue_service import RevenueService
+from sections.revenues.service import RevenueService
 from sections.revenues.form import revenue_form
 from sections.revenues.delete import delete_revenue_records
 from utils.navigation import check_query_params

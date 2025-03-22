@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.hr_expense_service import HRExpenseService
+from sections.hr_expenses.service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 

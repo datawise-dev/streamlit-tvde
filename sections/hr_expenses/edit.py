@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import date
-from services.hr_expense_service import HRExpenseService
+from sections.hr_expenses.service import HRExpenseService
 from sections.hr_expenses.form import hr_expense_form
 from sections.hr_expenses.delete import hr_expense_delete
 from utils.navigation import check_query_params

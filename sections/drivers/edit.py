@@ -1,5 +1,5 @@
 import streamlit as st
-from services.driver_service import DriverService
+from sections.drivers.service import DriverService
 from sections.drivers.delete import driver_delete
 from sections.drivers.form import driver_form
 from utils.navigation import check_query_params

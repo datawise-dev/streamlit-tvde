@@ -1,6 +1,6 @@
 import streamlit as st
-from services.driver_service import DriverService
-from services.car_service import CarService
+from sections.drivers.service import DriverService
+from sections.cars.service import CarService
 from utils.error_handlers import handle_streamlit_error
 
 

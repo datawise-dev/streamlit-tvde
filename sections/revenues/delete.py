@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.revenue_service import RevenueService
+from sections.revenues.service import RevenueService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 

@@ -1,5 +1,5 @@
 import streamlit as st
-from services.car_expense_service import CarExpenseService
+from sections.car_expenses.service import CarExpenseService
 from sections.car_expenses.form import car_expense_form
 from sections.car_expenses.delete import car_expense_delete
 from utils.navigation import check_query_params

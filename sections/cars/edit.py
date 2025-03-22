@@ -1,5 +1,5 @@
 import streamlit as st
-from services.car_service import CarService
+from sections.cars.service import CarService
 from sections.cars.delete import car_delete
 from sections.cars.form import car_form
 from utils.navigation import check_query_params

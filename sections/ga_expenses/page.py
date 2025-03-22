@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from services.ga_expense_service import GAExpenseService
+from sections.ga_expenses.service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 from sections.ga_expenses.delete import ga_expense_delete

@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import date
-from services.driver_service import DriverService
-from services.hr_expense_service import HRExpenseService
+from sections.drivers.service import DriverService
+from sections.hr_expenses.service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
 
 

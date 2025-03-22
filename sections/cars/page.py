@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from services.car_service import CarService
+from sections.cars.service import CarService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 from sections.cars.delete import car_delete

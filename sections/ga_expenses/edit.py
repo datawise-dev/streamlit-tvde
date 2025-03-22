@@ -1,5 +1,5 @@
 import streamlit as st
-from services.ga_expense_service import GAExpenseService
+from sections.ga_expenses.service import GAExpenseService
 from sections.ga_expenses.form import ga_expense_form
 from sections.ga_expenses.delete import ga_expense_delete
 from utils.navigation import check_query_params

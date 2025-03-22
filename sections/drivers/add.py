@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from services.driver_service import DriverService
+from sections.drivers.service import DriverService
 from sections.drivers.form import driver_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab

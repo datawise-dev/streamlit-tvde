@@ -1,7 +1,7 @@
 import streamlit as st
 from utils.error_handlers import handle_streamlit_error
 from datetime import date
-from services.car_service import CarService
+from sections.cars.service import CarService
 
 # Dictionary to map between Portuguese and English expense types
 EXPENSE_TYPE_MAP_PT_TO_EN = {

@@ -2,7 +2,7 @@ import streamlit as st
 from typing import Dict, List, Callable, Any, Type, Tuple
 import logging
 from utils.bulk_import import bulk_import_component
-from services.base_service import BaseService
+from utils.base_service import BaseService
 
 logger = logging.getLogger(__name__)
 

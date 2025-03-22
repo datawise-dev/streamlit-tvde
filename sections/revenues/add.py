@@ -1,5 +1,5 @@
 import streamlit as st
-from services.revenue_service import RevenueService
+from sections.revenues.service import RevenueService
 from sections.revenues.form import revenue_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
