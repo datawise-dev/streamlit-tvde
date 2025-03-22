@@ -9,7 +9,7 @@ from utils.error_handlers import handle_streamlit_error
 logger = logging.getLogger(__name__)
 
 
-def load_file(uploaded_file) -> Optional[pd.DataFrame]:
+def load_file(uploaded_file) -> Optional[Tuple[pd.DataFrame, List[str]]]:
     """
     Load data from an uploaded file into a pandas DataFrame.
     
@@ -17,8 +17,9 @@ def load_file(uploaded_file) -> Optional[pd.DataFrame]:
         uploaded_file: The file uploaded through Streamlit's file_uploader
         
     Returns:
-        DataFrame containing the file data or None if an error occurs
+        Tuple containing (DataFrame with file data, list of sheet names if Excel) or None if an error occurs
     """
+    tmp_filepath = None
     try:
         # Create a temporary file to store the uploaded content
         with tempfile.NamedTemporaryFile(
@@ -30,17 +31,34 @@ def load_file(uploaded_file) -> Optional[pd.DataFrame]:
         # Read the file based on its extension
         if uploaded_file.name.endswith(".csv"):
             df = pd.read_csv(tmp_filepath)
+            sheet_names = []  # CSV files don't have sheets
         else:  # Excel file
-            df = pd.read_excel(tmp_filepath)
+            # First, get the available sheet names
+            excel_file = pd.ExcelFile(tmp_filepath)
+            sheet_names = excel_file.sheet_names
+            
+            # By default, read the first sheet
+            df = pd.read_excel(excel_file, sheet_name=0)
+            excel_file.close()  # Explicitly close the Excel file
 
-        # Clean up the temporary file
-        os.unlink(tmp_filepath)
+        return df, sheet_names
         
-        return df
     except Exception as e:
         st.error(f"Erro ao processar o ficheiro: {str(e)}")
         logger.exception("Error loading file")
         return None
+        
+    finally:
+        # Ensure the temporary file is removed with error handling
+        if tmp_filepath and os.path.exists(tmp_filepath):
+            try:
+                os.unlink(tmp_filepath)
+            except Exception as e:
+                logger.warning(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
+                # On Windows, sometimes files can't be deleted immediately
+                # Schedule for deletion on program exit
+                import atexit
+                atexit.register(lambda file=tmp_filepath: os.path.exists(file) and os.remove(file))
 
 
 def display_data_preview(df: pd.DataFrame, rows: int = 10) -> None:
@@ -307,6 +325,76 @@ def import_data(valid_records: List[Dict], upload_function: Callable) -> bool:
             return False
 
 
+def select_sheet_ui(sheet_names: List[str]) -> int:
+    """
+    Create UI for selecting a sheet from an Excel file with multiple sheets.
+    
+    Args:
+        sheet_names: List of sheet names from the uploaded Excel file
+        
+    Returns:
+        Index of the selected sheet
+    """
+    if not sheet_names:
+        return 0  # Default to first sheet if no sheet names provided
+    
+    # Create a selection box for the user to choose a sheet
+    sheet_options = [f"{i+1}: {name}" for i, name in enumerate(sheet_names)]
+    selected_sheet = st.selectbox(
+        "Selecione a folha do Excel:",
+        options=sheet_options,
+        index=0,
+        help="Escolha a folha que contém os dados que deseja importar."
+    )
+    
+    # Extract the index from the selected option
+    selected_index = int(selected_sheet.split(':')[0]) - 1
+    return selected_index
+
+
+def load_excel_sheet(uploaded_file, sheet_index: int = 0) -> pd.DataFrame:
+    """
+    Load a specific sheet from an Excel file.
+    
+    Args:
+        uploaded_file: The file uploaded through Streamlit's file_uploader
+        sheet_index: Index of the sheet to load
+        
+    Returns:
+        DataFrame containing the sheet data or None if an error occurs
+    """
+    tmp_filepath = None
+    try:
+        # Create a temporary file to store the uploaded content
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=os.path.splitext(uploaded_file.name)[1]
+        ) as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_filepath = tmp_file.name
+
+        # Read the specified sheet using ExcelFile to ensure proper closing
+        with pd.ExcelFile(tmp_filepath) as excel_file:
+            df = pd.read_excel(excel_file, sheet_name=sheet_index)
+        
+        return df
+        
+    except Exception as e:
+        st.error(f"Erro ao carregar a folha selecionada: {str(e)}")
+        logger.exception("Error loading Excel sheet")
+        return None
+        
+    finally:
+        # Ensure the temporary file is removed with error handling
+        if tmp_filepath and os.path.exists(tmp_filepath):
+            try:
+                os.unlink(tmp_filepath)
+            except Exception as e:
+                logger.warning(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
+                # Schedule for deletion on program exit
+                import atexit
+                atexit.register(lambda file=tmp_filepath: os.path.exists(file) and os.remove(file))
+
+
 @handle_streamlit_error()
 def bulk_import_component(
     entity_name: str,
@@ -338,10 +426,24 @@ def bulk_import_component(
     )
 
     if uploaded_file is not None:
-        # Load the file
-        df = load_file(uploaded_file)
-        if df is None:
+        # Load the file initially to get sheet names if it's an Excel file
+        result = load_file(uploaded_file)
+        if result is None:
             return
+            
+        df, sheet_names = result
+        
+        # For Excel files with multiple sheets, show sheet selection
+        if uploaded_file.name.endswith(('.xlsx', '.xls')) and len(sheet_names) > 1:
+            st.info(f"O ficheiro Excel carregado contém {len(sheet_names)} folhas.")
+            selected_sheet_index = select_sheet_ui(sheet_names)
+            
+            # Load the selected sheet
+            df = load_excel_sheet(uploaded_file, selected_sheet_index)
+            if df is None:
+                return
+                
+            st.success(f"Folha '{sheet_names[selected_sheet_index]}' selecionada e carregada.")
             
         # Display data preview
         display_data_preview(df)
