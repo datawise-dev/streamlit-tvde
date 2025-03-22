@@ -418,6 +418,15 @@ def bulk_import_component(
 
     st.subheader(f"Importação em Massa de {entity_name.capitalize()}")
 
+    css = """
+    .stFileUploaderFile {
+        display: none;
+    }
+    """
+    # or `visibility: hidden;`
+
+    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
     # File upload
     uploaded_file = st.file_uploader(
         f"Carregue um ficheiro CSV ou Excel com os dados de {entity_name}",
