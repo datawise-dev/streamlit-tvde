@@ -99,7 +99,7 @@ def column_mapping_ui(
                 " *" if field in standard_fields[:4] else ""
             )  # Example: mark first 4 fields as required
             st.markdown(
-                f"<div style='text-align: right'><strong>{display_name}{required_marker}:</strong></div>",
+                f"<div style='text-align: right'><strong>{display_name}{required_marker}</strong></div>",
                 unsafe_allow_html=True,
             )
 
