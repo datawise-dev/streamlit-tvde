@@ -444,7 +444,7 @@ def bulk_import_component(
         
         # For Excel files with multiple sheets, show sheet selection
         if uploaded_file.name.endswith(('.xlsx', '.xls')) and len(sheet_names) > 1:
-            st.info(f"O ficheiro Excel carregado contém {len(sheet_names)} folhas.")
+            # st.info(f"O ficheiro Excel carregado contém {len(sheet_names)} folhas.")
             selected_sheet_index = select_sheet_ui(sheet_names)
             
             # Load the selected sheet
@@ -452,7 +452,7 @@ def bulk_import_component(
             if df is None:
                 return
                 
-            st.success(f"Folha '{sheet_names[selected_sheet_index]}' selecionada e carregada.")
+            # st.success(f"Folha '{sheet_names[selected_sheet_index]}' selecionada e carregada.")
             
         # Display data preview
         display_data_preview(df)
