@@ -1,6 +1,6 @@
 import streamlit as st
 from services.revenue_service import RevenueService
-from views.revenues.form import revenue_form
+from sections.revenues.form import revenue_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 
@@ -48,7 +48,7 @@ def manual_entry_tab():
 
                     # Botão para adicionar outra receita
                     st.page_link(
-                        "views/revenues/add.py",
+                        "sections/revenues/add.py",
                         label="Adicionar Outra Receita",
                         icon="➕",
                     )
@@ -170,7 +170,7 @@ def main():
         bulk_entry_tab()
 
     # Navigation button
-    st.page_link("views/revenues/page.py", label="Voltar à lista de Receitas", icon="⬅️")
+    st.page_link("sections/revenues/page.py", label="Voltar à lista de Receitas", icon="⬅️")
 
 # Execute the main function
 main()

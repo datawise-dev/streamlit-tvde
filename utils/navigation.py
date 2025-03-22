@@ -8,7 +8,7 @@ def switch_page(url):
     Custom switch page that supports query parameters by storing them in session state.
     
     Args:
-        url: Target URL with optional query parameters (e.g., "views/driver.py?id=123")
+        url: Target URL with optional query parameters (e.g., "sections/driver.py?id=123")
 
     Returns:
     """

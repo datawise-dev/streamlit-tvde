@@ -3,7 +3,7 @@ import pandas as pd
 from services.driver_service import DriverService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.drivers.delete import driver_delete
+from sections.drivers.delete import driver_delete
 
 
 def driver_card(driver):
@@ -73,7 +73,7 @@ def driver_card(driver):
                 icon="✏️",
                 use_container_width=True,
             ):
-                switch_page(f"views/drivers/edit.py?id={driver['id']}")
+                switch_page(f"sections/drivers/edit.py?id={driver['id']}")
 
             st.button(
                 "Eliminar",
@@ -111,7 +111,7 @@ def show_drivers_view():
 
     # Add New Driver button at the top
     st.page_link(
-        "views/drivers/add.py",
+        "sections/drivers/add.py",
         label="Adicionar Novo Motorista",
         icon="➕",
         use_container_width=True,

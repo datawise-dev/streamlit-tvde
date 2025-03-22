@@ -1,7 +1,7 @@
 import streamlit as st
 from services.ga_expense_service import GAExpenseService
-from views.ga_expenses.form import ga_expense_form
-from views.ga_expenses.delete import ga_expense_delete
+from sections.ga_expenses.form import ga_expense_form
+from sections.ga_expenses.delete import ga_expense_delete
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
 from datetime import date
@@ -78,7 +78,7 @@ def main():
     # Navigation and action buttons
     col1, col2 = st.columns(2)
     with col1:
-        st.page_link("views/ga_expenses/page.py", label="Voltar à lista de Despesas G&A", icon="⬅️", use_container_width=True)
+        st.page_link("sections/ga_expenses/page.py", label="Voltar à lista de Despesas G&A", icon="⬅️", use_container_width=True)
     with col2:
         if st.button("Eliminar Despesa", type="tertiary", icon="🗑️", use_container_width=True):
             ga_expense_delete(expense_id)

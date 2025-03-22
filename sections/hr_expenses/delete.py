@@ -28,4 +28,4 @@ def hr_expense_delete(expense_id, driver_name=None):
             HRExpenseService.delete_expense(expense_id)
         st.success("Despesa RH eliminada com sucesso!")
         time.sleep(1.5)
-        switch_page("views/hr_expenses/page.py")
+        switch_page("sections/hr_expenses/page.py")

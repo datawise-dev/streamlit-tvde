@@ -3,7 +3,7 @@ import pandas as pd
 from services.hr_expense_service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.hr_expenses.delete import hr_expense_delete
+from sections.hr_expenses.delete import hr_expense_delete
 
 
 def hr_expense_row(expense):
@@ -52,7 +52,7 @@ def hr_expense_row(expense):
                 type="tertiary",
                 help="Editar esta despesa",
             ):
-                switch_page(f"views/hr_expenses/edit.py?id={expense['id']}")
+                switch_page(f"sections/hr_expenses/edit.py?id={expense['id']}")
 
         with cols[7]:
             st.button(
@@ -90,7 +90,7 @@ def show_hr_expenses_view():
 
     # Add New HR Expense button at the top
     st.page_link(
-        "views/hr_expenses/add.py",
+        "sections/hr_expenses/add.py",
         label="Adicionar Nova Despesa RH",
         icon="➕",
         use_container_width=True,

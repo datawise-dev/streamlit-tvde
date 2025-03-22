@@ -24,4 +24,4 @@ def ga_expense_delete(expense_id):
             GAExpenseService.delete_ga_expense(expense_id)
         st.success("Despesa G&A eliminada com sucesso!")
         time.sleep(1.5)
-        switch_page("views/ga_expenses/page.py")
+        switch_page("sections/ga_expenses/page.py")

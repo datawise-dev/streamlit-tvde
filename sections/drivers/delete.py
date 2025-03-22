@@ -24,4 +24,4 @@ def driver_delete(driver_id, driver_name):
             DriverService.delete_driver(driver_id)
         st.success("Motorista eliminado com sucesso!")
         time.sleep(2.5)
-        switch_page("views/drivers/page.py")
+        switch_page("sections/drivers/page.py")

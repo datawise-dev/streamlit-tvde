@@ -2,7 +2,7 @@ import streamlit as st
 import time
 from datetime import date
 from services.hr_expense_service import HRExpenseService
-from views.hr_expenses.form import hr_expense_form
+from sections.hr_expenses.form import hr_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 
@@ -174,7 +174,7 @@ def main():
 
     # Link to return to list
     st.page_link(
-        "views/hr_expenses/page.py", label="Voltar à lista de Despesas RH", icon="⬅️"
+        "sections/hr_expenses/page.py", label="Voltar à lista de Despesas RH", icon="⬅️"
     )
 
 # Execute the main function

@@ -1,8 +1,8 @@
 import streamlit as st
 from datetime import date
 from services.hr_expense_service import HRExpenseService
-from views.hr_expenses.form import hr_expense_form
-from views.hr_expenses.delete import hr_expense_delete
+from sections.hr_expenses.form import hr_expense_form
+from sections.hr_expenses.delete import hr_expense_delete
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
 
@@ -88,7 +88,7 @@ def main():
     col1, col2 = st.columns(2)
     with col1:
         st.page_link(
-            "views/hr_expenses/page.py",
+            "sections/hr_expenses/page.py",
             label="Voltar à lista de Despesas RH",
             icon="⬅️",
             use_container_width=True,

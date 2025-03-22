@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from services.car_service import CarService
-from views.cars.form import car_form
+from sections.cars.form import car_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 
@@ -130,7 +130,7 @@ def main():
     with tab2:
         bulk_entry_tab()
 
-    st.page_link("views/cars/page.py", label="Voltar à lista de Veículos", icon="⬅️")
+    st.page_link("sections/cars/page.py", label="Voltar à lista de Veículos", icon="⬅️")
 
 
 # Execute the main function

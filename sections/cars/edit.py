@@ -1,7 +1,7 @@
 import streamlit as st
 from services.car_service import CarService
-from views.cars.delete import car_delete
-from views.cars.form import car_form
+from sections.cars.delete import car_delete
+from sections.cars.form import car_form
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
 
@@ -70,7 +70,7 @@ def main():
     col1, col2 = st.columns(2)
     with col1:
         st.page_link(
-            "views/cars/page.py",
+            "sections/cars/page.py",
             label="Voltar à lista de Veículos",
             icon="⬅️",
             use_container_width=True,

@@ -27,7 +27,7 @@ def delete_revenue_records(revenue_id):
                 RevenueService.delete_records([revenue_id])
                 st.success("Registo eliminado com sucesso!")
                 time.sleep(1.5)
-                switch_page("views/revenues/page.py")
+                switch_page("sections/revenues/page.py")
             except Exception as e:
                 st.error(f"Erro ao eliminar registo: {str(e)}")
                 time.sleep(3)

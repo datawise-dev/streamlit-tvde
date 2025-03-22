@@ -1,7 +1,7 @@
 import streamlit as st
 from services.revenue_service import RevenueService
-from views.revenues.form import revenue_form
-from views.revenues.delete import delete_revenue_records
+from sections.revenues.form import revenue_form
+from sections.revenues.delete import delete_revenue_records
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
 
@@ -76,7 +76,7 @@ def main():
     col1, col2 = st.columns(2)
     with col1:
         st.page_link(
-            "views/revenues/page.py",
+            "sections/revenues/page.py",
             label="Voltar à lista de Receitas",
             icon="⬅️",
             use_container_width=True,

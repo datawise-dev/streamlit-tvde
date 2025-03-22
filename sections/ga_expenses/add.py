@@ -1,11 +1,11 @@
 import streamlit as st
 import time
 from services.ga_expense_service import GAExpenseService
-from views.ga_expenses.form import ga_expense_form
+from sections.ga_expenses.form import ga_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 from datetime import date
-from views.ga_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
+from sections.ga_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single G&A expense."""
@@ -147,7 +147,7 @@ def main():
         bulk_entry_tab()
 
     # Link to return to list
-    st.page_link("views/ga_expenses/page.py", label="Voltar à lista de Despesas G&A", icon="⬅️")
+    st.page_link("sections/ga_expenses/page.py", label="Voltar à lista de Despesas G&A", icon="⬅️")
 
 # Execute the main function
 main()

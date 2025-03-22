@@ -3,7 +3,7 @@ import pandas as pd
 from services.ga_expense_service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.ga_expenses.delete import ga_expense_delete
+from sections.ga_expenses.delete import ga_expense_delete
 
 
 def ga_expense_row(expense):
@@ -63,7 +63,7 @@ def ga_expense_row(expense):
                 type="tertiary",
                 help="Editar esta despesa",
             ):
-                switch_page(f"views/ga_expenses/edit.py?id={expense['id']}")
+                switch_page(f"sections/ga_expenses/edit.py?id={expense['id']}")
 
         with cols[7]:
             st.button(
@@ -123,7 +123,7 @@ def show_ga_expenses_view():
 
     # Add New G&A Expense button at the top
     st.page_link(
-        "views/ga_expenses/add.py",
+        "sections/ga_expenses/add.py",
         label="Adicionar Nova Despesa G&A",
         icon="➕",
         use_container_width=True,

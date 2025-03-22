@@ -3,7 +3,7 @@ import pandas as pd
 from services.car_service import CarService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.cars.delete import car_delete
+from sections.cars.delete import car_delete
 
 
 def car_card(car):
@@ -59,7 +59,7 @@ def car_card(car):
                 icon="✏️",
                 use_container_width=True,
             ):
-                switch_page(f"views/cars/edit.py?id={car['id']}")
+                switch_page(f"sections/cars/edit.py?id={car['id']}")
 
             st.button(
                 "Eliminar",
@@ -105,7 +105,7 @@ def show_cars_view():
 
     # Add New Car button at the top
     st.page_link(
-        "views/cars/add.py",
+        "sections/cars/add.py",
         label="Adicionar Novo Veículo",
         icon="➕",
         use_container_width=True,

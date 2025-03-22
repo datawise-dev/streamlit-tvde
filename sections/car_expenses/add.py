@@ -1,11 +1,11 @@
 import streamlit as st
 import time
 from services.car_expense_service import CarExpenseService
-from views.car_expenses.form import car_expense_form
+from sections.car_expenses.form import car_expense_form
 from utils.error_handlers import handle_streamlit_error
 from utils.entity_import import entity_bulk_import_tab
 from datetime import date
-from views.car_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
+from sections.car_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single car expense."""
@@ -159,7 +159,7 @@ def main():
 
     # Link to return to list
     st.page_link(
-        "views/car_expenses/page.py",
+        "sections/car_expenses/page.py",
         label="Voltar à lista de Despesas de Veículos",
         icon="⬅️",
     )

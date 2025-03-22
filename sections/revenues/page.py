@@ -3,7 +3,7 @@ import pandas as pd
 from services.revenue_service import RevenueService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.revenues.delete import delete_revenue_records
+from sections.revenues.delete import delete_revenue_records
 
 
 def revenue_row(revenue):
@@ -54,7 +54,7 @@ def revenue_row(revenue):
                 type="tertiary",
                 help="Editar este registo",
             ):
-                switch_page(f"views/revenues/edit.py?id={revenue['id']}")
+                switch_page(f"sections/revenues/edit.py?id={revenue['id']}")
 
         with cols[7]:
             st.button(
@@ -103,7 +103,7 @@ def show_revenues_view():
 
     # Add New Revenue button at the top
     st.page_link(
-        "views/revenues/add.py",
+        "sections/revenues/add.py",
         label="Adicionar Nova Receita",
         icon="➕",
         use_container_width=True,

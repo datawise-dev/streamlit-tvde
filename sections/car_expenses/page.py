@@ -3,7 +3,7 @@ import pandas as pd
 from services.car_expense_service import CarExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from views.car_expenses.delete import car_expense_delete
+from sections.car_expenses.delete import car_expense_delete
 
 
 def car_expense_row(expense):
@@ -55,7 +55,7 @@ def car_expense_row(expense):
                 type="tertiary",
                 help="Editar esta despesa",
             ):
-                switch_page(f"views/car_expenses/edit.py?id={expense['id']}")
+                switch_page(f"sections/car_expenses/edit.py?id={expense['id']}")
 
         with cols[7]:
             st.button(
@@ -115,7 +115,7 @@ def show_car_expenses_view():
 
     # Add New Car Expense button at the top
     st.page_link(
-        "views/car_expenses/add.py",
+        "sections/car_expenses/add.py",
         label="Adicionar Nova Despesa de Veículo",
         icon="➕",
         use_container_width=True,
