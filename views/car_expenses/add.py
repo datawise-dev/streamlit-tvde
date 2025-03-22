@@ -3,13 +3,11 @@ import time
 from services.car_expense_service import CarExpenseService
 from views.car_expenses.form import car_expense_form
 from utils.error_handlers import handle_streamlit_error
+from utils.entity_import import entity_bulk_import_tab
 from datetime import date
 
-
-@handle_streamlit_error()
-def main():
-    st.title("Adicionar Nova Despesa de Veículo")
-
+def manual_entry_tab():
+    """Display the manual entry form for adding a single car expense."""
     submit_button, expense_data = car_expense_form()
 
     # Handle form submission
@@ -67,13 +65,84 @@ def main():
         except Exception as e:
             st.error(f"Erro ao guardar dados: {str(e)}")
 
+def bulk_entry_tab():
+    """Display the bulk import interface for adding multiple car expenses."""
+    # Define standard fields for car expenses
+    standard_fields = [
+        "car_id", "expense_type", "start_date", "end_date", 
+        "amount", "vat", "description"
+    ]
+    
+    # Map field names to friendly display names
+    field_display_names = {
+        "car_id": "ID do Veículo",
+        "expense_type": "Tipo de Despesa",
+        "start_date": "Data de Início",
+        "end_date": "Data de Fim",
+        "amount": "Montante (€)",
+        "vat": "IVA (%)",
+        "description": "Descrição"
+    }
+    
+    # Set field constraints
+    field_constraints = {
+        "expense_type": {
+            "valid_values": ["Credit", "Gasoline", "Tolls", "Repairs", "Washing"]
+        }
+    }
+    
+    # Create help content
+    help_content = {
+        "Formato dos Dados": """
+        Certifique-se de que:
+        - As datas estão no formato YYYY-MM-DD
+        - A Data de Início não pode ser posterior à Data de Fim
+        - O ID do Veículo deve corresponder a um veículo existente no sistema
+        - O Tipo de Despesa deve ser um de: Credit, Gasoline, Tolls, Repairs, Washing
+        - Para despesas do tipo 'Credit', a Data de Fim é obrigatória
+        - Os valores monetários devem usar o ponto como separador decimal
+        """,
+        "Tipos de Despesa": """
+        Os tipos de despesa disponíveis são:
+        - Credit (Crédito)
+        - Gasoline (Combustível)
+        - Tolls (Portagens)
+        - Repairs (Reparações)
+        - Washing (Lavagem)
+        """
+    }
+    
+    # Use the generic bulk import tab
+    entity_bulk_import_tab(
+        entity_name="despesas de veículos",
+        service_class=CarExpenseService,
+        standard_fields=standard_fields,
+        field_display_names=field_display_names,
+        field_constraints=field_constraints,
+        insert_method_name="insert_car_expense",
+        help_content=help_content
+    )
+
+@handle_streamlit_error()
+def main():
+    """Main function to display the add car expense page with tabs."""
+    st.title("Adicionar Nova Despesa de Veículo")
+    
+    # Create tabs for manual entry and bulk import
+    tab1, tab2 = st.tabs(["Manual", "Ficheiro"])
+    
+    with tab1:
+        manual_entry_tab()
+    
+    with tab2:
+        bulk_entry_tab()
+
     # Link to return to list
     st.page_link(
         "views/car_expenses/page.py",
         label="Voltar à lista de Despesas de Veículos",
         icon="⬅️",
     )
-
 
 # Execute the main function
 main()
