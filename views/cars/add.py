@@ -3,7 +3,7 @@ import time
 from services.car_service import CarService
 from views.cars.form import car_form
 from utils.error_handlers import handle_streamlit_error
-from utils.bulk_import import bulk_import_component
+from utils.entity_import import entity_bulk_import_tab
 
 def manual_entry_tab():
     # Existing manual entry form
@@ -65,53 +65,19 @@ def bulk_entry_tab():
         "category": "Categoria",
     }
     
-    # Define the validation function for a single record
-    def validate_car_record(record):
-        # Add is_active field if not present
-        if "is_active" not in record:
-            record["is_active"] = True
-            
-        # Ensure category is valid
-        valid_categories = ["Economy", "Standard", "Premium", "Luxury"]
-        if "category" in record and record["category"] not in valid_categories:
-            return False, [f"Categoria inválida. Deve ser uma das seguintes: {', '.join(valid_categories)}"]
-        
-        return CarService.validate(record)
+    # Set field constraints
+    field_constraints = {
+        "category": {
+            "valid_values": ["Economy", "Standard", "Premium", "Luxury"]
+        },
+        "is_active": {
+            "default": True
+        }
+    }
     
-    # Define the upload function for the processed records
-    def upload_car_records(records):
-        # Process each record individually since we need to check for unique constraints
-        success_count = 0
-        errors = []
-        
-        for record in records:
-            try:
-                CarService.insert_car(record)
-                success_count += 1
-            except Exception as e:
-                errors.append(str(e))
-        
-        if errors:
-            if len(errors) == len(records):
-                raise Exception(f"Falha ao importar todos os registos. Primeiro erro: {errors[0]}")
-            else:
-                raise Exception(f"Importados {success_count} de {len(records)} registos. Erro: {errors[0]}")
-        
-        return True
-    
-    # Use the bulk import component
-    with st.container(border=1):
-        bulk_import_component(
-            entity_name="veículos",
-            standard_fields=standard_fields,
-            validation_function=validate_car_record,
-            upload_function=upload_car_records,
-            field_display_names=field_display_names
-        )
-    
-    # Display additional help information
-    with st.expander("Informação sobre Categorias"):
-        st.info("""
+    # Create help content
+    help_content = {
+        "Informação sobre Categorias": """
         As categorias válidas para veículos são:
         - Economy
         - Standard
@@ -119,7 +85,19 @@ def bulk_entry_tab():
         - Luxury
         
         Certifique-se de que os valores na coluna 'Categoria' correspondem exatamente a uma destas opções.
-        """)
+        """
+    }
+    
+    # Use the generic bulk import tab
+    entity_bulk_import_tab(
+        entity_name="veículos",
+        service_class=CarService,
+        standard_fields=standard_fields,
+        field_display_names=field_display_names,
+        field_constraints=field_constraints,
+        insert_method_name="insert_car",
+        help_content=help_content
+    )
 
 
 @handle_streamlit_error()
