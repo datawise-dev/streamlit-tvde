@@ -270,4 +270,4 @@ class BaseService:
         
         # Execute query using pandas
         engine = get_db_engine()
-        return pd.read_sql_query(query, engine, params=params)
+        return pd.read_sql_query(query, engine, params=tuple(params))
