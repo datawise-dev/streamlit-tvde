@@ -177,6 +177,63 @@ def validate_regex(pattern: str, message: str) -> Validator:
     return validator
 
 
+def validate_options(valid_values: List[Any], allow_default: bool = False, default_value: Any = None) -> callable:
+    """
+    Creates a validator that checks if a value is in a list of valid values.
+    
+    Args:
+        valid_values: List of allowed values
+        allow_default: Whether to allow a default value not in the list
+        default_value: The default value to allow (typically None)
+        
+    Returns:
+        A validator function
+    """
+    def validator(value: Any, field_name: str = "") -> Tuple[bool, str]:
+        # Check if value is the allowed default
+        if allow_default and value == default_value:
+            return True, ""
+            
+        # Check if value is in valid values
+        if value in valid_values:
+            return True, ""
+        
+        # Value is invalid - create readable error message
+        values_str = ", ".join(map(str, valid_values))
+        return False, f"Must be one of: {values_str}"
+    
+    return validator
+
+
+def validate_boolean(value: Any, field_name: str = "") -> Tuple[bool, str]:
+    """
+    Validates that a value is a boolean or can be interpreted as a boolean.
+    
+    Args:
+        value: The value to validate
+        field_name: Name of the field (for error message)
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    # Check if it's already a boolean
+    if isinstance(value, bool):
+        return True, ""
+    
+    # Check if it's a string that can be interpreted as boolean
+    if isinstance(value, str):
+        value_lower = value.lower()
+        if value_lower in ['true', 'false', 'yes', 'no', '1', '0', 'on', 'off']:
+            return True, ""
+    
+    # Check if it's an integer that can be interpreted as boolean
+    if isinstance(value, int) and value in [0, 1]:
+        return True, ""
+    
+    # Invalid boolean value
+    return False, "Must be a boolean value"
+
+
 def validate_license_plate(value: str) -> ValidationResult:
     """
     Validates that a value is a valid Portuguese license plate.
