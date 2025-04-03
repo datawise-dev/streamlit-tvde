@@ -79,7 +79,7 @@ def main():
         # Try to update the data
         try:
             with st.spinner("A atualizar dados..."):
-                CarExpenseService.update_car_expense(expense_id, expense_data)
+                CarExpenseService.update(expense_id, expense_data)
             st.success("Despesa de veículo atualizada com sucesso!")
         except Exception as e:
             st.error(f"Erro ao atualizar dados: {str(e)}")

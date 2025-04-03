@@ -37,7 +37,7 @@ def revenue_form(existing_data=None):
                 )
         else:
             # Caso contrário, obtemos todos os motoristas
-            active_drivers = DriverService.get_all_drivers()
+            active_drivers = DriverService.get_all(condition={'active': True})
 
         driver_options = (
             {driver[0]: f"{driver[1]}" for driver in active_drivers}

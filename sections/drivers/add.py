@@ -10,15 +10,7 @@ def manual_entry_tab():
     """Display the manual entry form for adding a single driver."""
     submit_button, driver_data = driver_form()
 
-    required_fields = ["display_name", "first_name", "last_name", "nif"]
-
     if submit_button:
-        # Validate required fields
-        for k in required_fields:
-            if not driver_data.get(k, ""):
-                st.error("Todos os campos obrigatórios devem ser preenchidos")
-                st.stop()
-
         try:
             with st.spinner("A adicionar dados...", show_time=True):
                 DriverService.insert(driver_data)

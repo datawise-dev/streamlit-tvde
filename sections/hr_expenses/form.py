@@ -45,13 +45,13 @@ def hr_expense_form(existing_data=None):
 
         # Driver selection
         try:
-            drivers = DriverService.get_all_drivers()
-            if not drivers:
+            drivers = DriverService.get_many(conditions={'is_active': True})
+            if len(drivers) == 0:
                 st.warning("Não existem motoristas registados no sistema")
                 driver_options = {}
             else:
                 # Create a dictionary for driver selection
-                driver_options = {driver[0]: driver[1] for driver in drivers}
+                driver_options = {driver['id']: driver['display_name'] for driver in drivers}
 
             default_index = 0
             if existing_data.get("driver_id") in driver_options:

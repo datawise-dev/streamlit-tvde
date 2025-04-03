@@ -5,8 +5,6 @@ from config.database import DB_CONFIG
 import logging
 from utils.error_handlers import handle_database_error
 
-logger = logging.getLogger(__name__)
-
 @contextmanager
 @handle_database_error()
 def get_db_connection():
@@ -25,12 +23,8 @@ def get_db_connection():
         conn = psycopg2.connect(**DB_CONFIG)
         yield conn
     except psycopg2.OperationalError as e:
-        logger.error(f"Database connection error: {str(e)}")
+        print(f"Database connection error: {str(e)}")
         raise Exception("Não foi possível estabelecer ligação à base de dados. Por favor, verifique as configurações e tente novamente.")
-    finally:
-        if conn:
-            conn.close()
-            logger.debug("Database connection closed")
 
 @handle_database_error()
 def get_db_engine():
@@ -51,5 +45,5 @@ def get_db_engine():
         )
         return create_engine(connection_string)
     except Exception as e:
-        logger.error(f"Error creating database engine: {str(e)}")
+        print(f"Error creating database engine: {str(e)}")
         raise Exception("Não foi possível criar o motor de base de dados. Por favor, verifique as configurações e tente novamente.")

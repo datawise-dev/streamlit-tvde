@@ -30,11 +30,6 @@ class DriverService(BaseService):
         Raises:
             Exception: If validation fails or insertion error occurs
         """
-        # Validate the data
-        is_valid, errors = cls.validate(data)
-        if not is_valid:
-            raise ValueError(f"Dados inválidos: {', '.join(errors)}")
-        
         # Check if display_name or nif already exists
         with get_db_connection() as conn:
             with conn.cursor() as cur:
