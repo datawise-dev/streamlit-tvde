@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.error_handlers import handle_streamlit_error
 from utils.form_builder import FormBuilder
+from utils.validators import validate_license_plate
 
 
 @handle_streamlit_error()
@@ -16,7 +17,7 @@ def car_form(existing_data=None):
         label="Matrícula",
         type="text",
         required=True,
-        # Add validator
+        validator=validate_license_plate
     )
 
     # --- Brand and Model ---
@@ -27,7 +28,6 @@ def car_form(existing_data=None):
         type="text",
         required=True,
     )
-    form.next_column()
     form.create_field(
         key="model",
         label="Modelo",
@@ -47,7 +47,6 @@ def car_form(existing_data=None):
         step=100.0,
         format="%.2f",
     )
-    form.next_column()
     form.create_field(
         key="acquisition_date",
         label="Data de Aquisição",
