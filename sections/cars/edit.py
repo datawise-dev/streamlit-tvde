@@ -28,34 +28,14 @@ def main():
         st.error("ID de veículo inválido.")
         st.stop()
 
-    submit_button, car_data = car_form(existing_data)
-
-    required_fields = [
-        "license_plate",
-        "brand",
-        "model",
-        "acquisition_cost",
-        "acquisition_date",
-        "category",
-    ]
+    form = car_form()
+    submit_button = form.render(existing_data)
+    data = form.data
 
     if submit_button:
         # Ensure acquisition_date is formatted as string
-        if isinstance(car_data.get("acquisition_date"), object):
-            car_data["acquisition_date"] = car_data["acquisition_date"].strftime(
-                "%Y-%m-%d"
-            )
-
-        # Validate required fields
-        missing_fields = []
-        for field in required_fields:
-            if not car_data.get(field, ""):
-                missing_fields.append(field)
-
-        if missing_fields:
-            st.error("Todos os campos obrigatórios devem ser preenchidos")
-            st.stop()
-
+        if isinstance(data.get("acquisition_date"), object):
+            data["acquisition_date"] = data["acquisition_date"].strftime("%Y-%m-%d")
         try:
             with st.spinner("A atualizar dados...", show_time=True):
                 CarService.update(car_id, data)
