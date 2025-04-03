@@ -70,61 +70,60 @@ def bulk_entry_tab():
     fields_config = [
         {
             "key": "driver_id",
-            "display_name": "ID do Motorista",
+            "label": "ID do Motorista",
             "required": True,
-            "validators": ["numeric"]
+            "type": "number",
         },
         {
             "key": "start_date",
-            "display_name": "Data de Início",
+            "label": "Data de Início",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date"
         },
         {
             "key": "end_date",
-            "display_name": "Data de Fim",
+            "label": "Data de Fim",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date"
         },
         {
             "key": "payment_date",
-            "display_name": "Data de Pagamento",
+            "label": "Data de Pagamento",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date"
         },
         {
             "key": "base_salary",
-            "display_name": "Salário Base (€)",
+            "label": "Salário Base (€)",
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "working_days",
-            "display_name": "Dias Úteis Trabalhados",
+            "label": "Dias Úteis Trabalhados",
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "meal_allowance_per_day",
-            "display_name": "Subsídio de Alimentação / Dia (€)",
+            "label": "Subsídio de Alimentação / Dia (€)",
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "other_benefits",
-            "display_name": "Outros Benefícios (€)",
+            "label": "Outros Benefícios (€)",
             "validators": ["numeric"],
-            "constraints": {"min_value": 0},
-            "default_value": 0.0
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "notes",
-            "display_name": "Notas",
-            "validators": ["max_length"],
-            "constraints": {"max_length": 500}
+            "label": "Notas",
+            "max_length": 500
         }
     ]
     

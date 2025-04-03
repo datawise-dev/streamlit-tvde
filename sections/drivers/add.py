@@ -4,6 +4,7 @@ from sections.drivers.service import DriverService
 from sections.drivers.form import driver_form
 from utils.error_handlers import handle_streamlit_error
 from utils.bulk_import import entity_bulk_import_tab
+from utils.validators import validate_nif, validate_postal_code
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single driver."""
@@ -35,45 +36,45 @@ def bulk_entry_tab():
     fields_config = [
         {
             "key": "display_name",
-            "display_name": "Nome de Exibição",
+            "label": "Nome de Exibição",
             "required": True
         },
         {
             "key": "first_name",
-            "display_name": "Nome",
+            "label": "Nome",
             "required": True
         },
         {
             "key": "last_name",
-            "display_name": "Apelido",
+            "label": "Apelido",
             "required": True
         },
         {
             "key": "nif",
-            "display_name": "NIF",
+            "label": "NIF",
             "required": True,
-            "validators": ["nif"]
+            "validator": validate_nif
         },
         {
             "key": "address_line1",
-            "display_name": "Morada (Linha 1)"
+            "label": "Morada (Linha 1)"
         },
         {
             "key": "address_line2",
-            "display_name": "Morada (Linha 2)"
+            "label": "Morada (Linha 2)"
         },
         {
             "key": "postal_code",
-            "display_name": "Código Postal",
-            "validators": ["postal_code"]
+            "label": "Código Postal",
+            "validator": validate_postal_code
         },
         {
             "key": "location",
-            "display_name": "Localidade"
+            "label": "Localidade"
         },
         {
             "key": "is_active",
-            "display_name": "Ativo",
+            "label": "Ativo",
             "default_value": True
         }
     ]

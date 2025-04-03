@@ -64,45 +64,46 @@ def bulk_entry_tab():
     fields_config = [
         {
             "key": "expense_type",
-            "display_name": "Tipo de Despesa",
+            "label": "Tipo de Despesa",
             "required": True,
-            "constraints": {"valid_values": list(EXPENSE_TYPE_MAP_PT_TO_EN.values())}
+            "type": "selector",
+            "options": list(EXPENSE_TYPE_MAP_PT_TO_EN.values())
         },
         {
             "key": "start_date",
-            "display_name": "Data de Início",
+            "label": "Data de Início",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date",
         },
         {
             "key": "end_date",
-            "display_name": "Data de Fim",
-            "validators": ["date_format"]
+            "label": "Data de Fim",
+            "type": "date",
         },
         {
             "key": "payment_date",
-            "display_name": "Data de Pagamento",
-            "validators": ["date_format"]
+            "label": "Data de Pagamento",
+            "type": "date",
         },
         {
             "key": "amount",
-            "display_name": "Montante (€)",
+            "label": "Montante (€)",
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
+            "type": "number",
+            "min_value": 0,
         },
         {
             "key": "vat",
-            "display_name": "IVA (%)",
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0, "max_value": 100},
+            "label": "IVA (%)",
+            "type": "number",
+            "min_value": 0,
+            "max_value": 100,
             "default_value": 23.0
         },
         {
             "key": "description",
-            "display_name": "Descrição",
-            "validators": ["max_length"],
-            "constraints": {"max_length": 500}
+            "label": "Descrição",
+            "max_length": 500,
         }
     ]
     

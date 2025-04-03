@@ -34,44 +34,45 @@ def bulk_entry_tab():
     fields_config = [
         {
             "key": "license_plate",
-            "display_name": "Matrícula",
+            "label": "Matrícula",
             "required": True,
-            "validators": ["license_plate"]
+            "validator": validate_license_plate
         },
         {
             "key": "brand",
-            "display_name": "Marca",
+            "label": "Marca",
             "required": True
         },
         {
             "key": "model",
-            "display_name": "Modelo",
+            "label": "Modelo",
             "required": True
         },
         {
             "key": "acquisition_cost",
-            "display_name": "Custo de Aquisição (€)",
+            "label": "Custo de Aquisição (€)",
+            "type": "number", #
+            "min_value": 0, #
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
         },
         {
             "key": "acquisition_date",
-            "display_name": "Data de Aquisição",
+            "label": "Data de Aquisição",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date" #
         },
         {
             "key": "category",
-            "display_name": "Categoria",
+            "label": "Categoria",
             "required": True,
-            "constraints": {"valid_values": ["Economy", "Standard", "Premium", "Luxury"]},
-            "default_value": "Standard"
+            "options": ["Economy", "Standard", "Premium", "Luxury"],
+            "default": "Standard"
         },
         {
             "key": "is_active",
-            "display_name": "Ativo",
-            "default_value": True
+            "label": "Ativo",
+            "type": "checkbox",
+            "default": True
         }
     ]
     

@@ -2,7 +2,8 @@ import streamlit as st
 from sections.revenues.service import RevenueService
 from sections.revenues.form import revenue_form
 from utils.error_handlers import handle_streamlit_error
-from utils.entity_import import entity_bulk_import_tab
+from utils.bulk_import import entity_bulk_import_tab
+from utils.validators import validate_license_plate
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single revenue entry."""
@@ -61,66 +62,65 @@ def bulk_entry_tab():
     fields_config = [
         {
             "key": "start_date",
-            "display_name": "Data Início",
+            "label": "Data Início",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date"
         },
         {
             "key": "end_date",
-            "display_name": "Data Fim",
+            "label": "Data Fim",
             "required": True,
-            "validators": ["date_format"]
+            "type": "date"
         },
         {
             "key": "driver_name",
-            "display_name": "Nome do Motorista",
+            "label": "Nome do Motorista",
             "required": True
         },
         {
             "key": "license_plate",
-            "display_name": "Matrícula", 
+            "label": "Matrícula", 
             "required": True,
-            "validators": ["license_plate"]
+            "validators": validate_license_plate
         },
         {
             "key": "platform",
-            "display_name": "Plataforma",
+            "label": "Plataforma",
             "required": True,
-            "constraints": {"valid_values": ["Uber", "Bolt", "Transfer"]}
+            "options": ["Uber", "Bolt", "Transfer"]
         },
         {
             "key": "gross_revenue",
-            "display_name": "Receita Bruta",
+            "label": "Receita Bruta",
             "required": True,
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0}
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "commission_percentage",
-            "display_name": "Comissão (%)",
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0, "max_value": 100},
-            "default_value": 0.0
+            "label": "Comissão (%)",
+            "type": "number",
+            "min_value": 0,
+            "max_value": 100,
         },
         {
             "key": "tip",
-            "display_name": "Gorjeta",
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0},
-            "default_value": 0.0
+            "label": "Gorjeta",
+            "type": "number",
+            "min_value": 0
         },
         {
             "key": "num_travels",
-            "display_name": "Número de Viagens",
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0},
+            "label": "Número de Viagens",
+            "type": "number",
+            "min_value": 0,
             "default_value": 0
         },
         {
             "key": "num_kilometers",
-            "display_name": "Número de Quilómetros",
-            "validators": ["numeric"],
-            "constraints": {"min_value": 0},
+            "label": "Número de Quilómetros",
+            "type": "number",
+            "min_value": 0,
             "default_value": 0.0
         }
     ]
@@ -151,7 +151,6 @@ def bulk_entry_tab():
         entity_name="receitas",
         service_class=RevenueService,
         fields_config=fields_config,
-        insert_method_name="insert_revenue_data",
         help_content=help_content
     )
 
