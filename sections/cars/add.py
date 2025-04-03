@@ -9,31 +9,12 @@ def manual_entry_tab():
     # Existing manual entry form
     submit_button, car_data = car_form()
 
-    required_fields = [
-        "license_plate",
-        "brand",
-        "model",
-        "acquisition_cost",
-        "acquisition_date",
-        "category",
-    ]
-
     if submit_button:
         # Ensure acquisition_date is formatted as string
         if isinstance(car_data.get("acquisition_date"), object):
             car_data["acquisition_date"] = car_data["acquisition_date"].strftime(
                 "%Y-%m-%d"
             )
-
-        # Validate required fields
-        missing_fields = []
-        for field in required_fields:
-            if not car_data.get(field, ""):
-                missing_fields.append(field)
-
-        if missing_fields:
-            st.error("Todos os campos obrigatórios devem ser preenchidos")
-            st.stop()
 
         try:
             with st.spinner("A adicionar dados...", show_time=True):
