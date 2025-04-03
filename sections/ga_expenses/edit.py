@@ -70,7 +70,7 @@ def main():
         # Try to update the data
         try:
             with st.spinner("A atualizar dados..."):
-                GAExpenseService.update_ga_expense(expense_id, expense_data)
+                GAExpenseService.update(expense_id, expense_data)
             st.success("Despesa G&A atualizada com sucesso!")
         except Exception as e:
             st.error(f"Erro ao atualizar dados: {str(e)}")

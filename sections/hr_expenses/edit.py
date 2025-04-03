@@ -79,7 +79,7 @@ def main():
         # Try to update the data
         try:
             with st.spinner("A atualizar dados..."):
-                HRExpenseService.update_expense(expense_id, expense_data)
+                HRExpenseService.update(expense_id, expense_data)
             st.success("Despesa RH atualizada com sucesso!")
         except Exception as e:
             st.error(f"Erro ao atualizar dados: {str(e)}")

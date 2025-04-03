@@ -17,7 +17,7 @@ class GAExpenseService(BaseService):
 
     @classmethod
     @handle_service_error("Error getting expense summary")
-    def get_expense_summary(cls, start_date: str = None, end_date: str = None) -> Dict:
+    def get_summary(cls, start_date: str = None, end_date: str = None) -> Dict:
         """
         Get a summary of G&A expenses by type within a date range.
         

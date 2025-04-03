@@ -40,7 +40,7 @@ def main():
 
         try:
             with st.spinner("A atualizar dados...", show_time=True):
-                DriverService.update_driver(driver_id, driver_data)
+                DriverService.update(driver_id, driver_data)
             st.success("Motorista atualizado com sucesso!")
             # Adicionar botão para voltar à lista
             # st.link_button("Voltar à Lista", "/drivers")

@@ -47,7 +47,7 @@ def main():
         # Attempt to update data
         try:
             with st.spinner("A atualizar dados..."):
-                if RevenueService.update_revenue(revenue_id, revenue_data):
+                if RevenueService.update(revenue_id, revenue_data):
                     st.success("Dados de receita atualizados com sucesso!")
 
                     # Display a summary of the updated data

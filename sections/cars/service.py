@@ -55,7 +55,7 @@ class CarService(BaseService):
     
     @classmethod
     @handle_service_error("Error getting car statistics")
-    def get_car_stats(cls) -> Dict:
+    def get_summary(cls) -> Dict:
         """
         Get statistics about cars.
         
