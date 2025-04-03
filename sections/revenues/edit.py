@@ -18,7 +18,7 @@ def main():
     try:
         revenue_id = int(st.query_params["id"])
         # Get revenue data
-        existing_data = RevenueService.get_revenue(revenue_id)
+        existing_data = RevenueService.get(revenue_id)
         if not existing_data:
             st.error("Receita não encontrada.")
             st.stop()

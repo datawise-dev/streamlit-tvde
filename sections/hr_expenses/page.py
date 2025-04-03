@@ -99,7 +99,7 @@ def show_hr_expenses_view():
     if submit_button or "hr_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
-                df = HRExpenseService.load_expenses()
+                df = HRExpenseService.get_many()
                 # Store the loaded data in session state to persist between reruns
                 st.session_state.hr_expenses_data_loaded = True
 

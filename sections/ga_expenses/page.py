@@ -132,7 +132,7 @@ def show_ga_expenses_view():
     if submit_button or "ga_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
-                df = GAExpenseService.load_ga_expenses()
+                df = GAExpenseService.get_many()
                 # Store the loaded data in session state to persist between reruns
                 st.session_state.ga_expenses_data_loaded = True
 

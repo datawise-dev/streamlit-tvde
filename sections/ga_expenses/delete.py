@@ -21,7 +21,7 @@ def ga_expense_delete(expense_id):
     
     if btn_delete:
         with st.spinner("A eliminar despesa...", show_time=True):
-            GAExpenseService.delete_ga_expense(expense_id)
+            GAExpenseService.delete(expense_id)
         st.success("Despesa G&A eliminada com sucesso!")
         time.sleep(1.5)
         switch_page("sections/ga_expenses/page.py")

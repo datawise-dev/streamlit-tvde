@@ -18,7 +18,7 @@ def manual_entry_tab():
 
         try:
             with st.spinner("A adicionar dados...", show_time=True):
-                CarService.insert_car(car_data)
+                CarService.insert(data)
             st.success("Veículo adicionado com sucesso!")
             time.sleep(2)
             # Clear form after successful insert
@@ -93,7 +93,6 @@ def bulk_entry_tab():
         entity_name="veículos",
         service_class=CarService,
         fields_config=fields_config,
-        insert_method_name="insert_car",
         help_content=help_content
     )
 

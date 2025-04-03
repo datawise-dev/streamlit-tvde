@@ -17,7 +17,7 @@ def main():
     try:
         expense_id = int(st.query_params["id"])
         # Get expense data
-        existing_data = GAExpenseService.get_ga_expense(expense_id)
+        existing_data = GAExpenseService.get(expense_id)
         if not existing_data:
             st.error("Despesa G&A não encontrada.")
             st.stop()

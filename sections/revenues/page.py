@@ -113,7 +113,7 @@ def show_revenues_view():
         # Load data
         with st.spinner("A carregar dados...", show_time=True):
             try:
-                df = RevenueService.load_data()
+                df = RevenueService.get_many()
                 # Store the loaded data in session state to persist between reruns
                 st.session_state.revenues_data_loaded = True
 

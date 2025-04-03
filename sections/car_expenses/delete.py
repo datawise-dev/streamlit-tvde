@@ -19,7 +19,7 @@ def car_expense_delete(expense_id):
     with col2:
         if st.button("Confirmar", type="primary", use_container_width=True):
             with st.spinner("A eliminar despesa...", show_time=True):
-                CarExpenseService.delete_car_expense(expense_id)
+                CarExpenseService.delete(expense_id)
             st.success("Despesa de veículo eliminada com sucesso!")
             time.sleep(1.5)
             switch_page("sections/car_expenses/page.py")

@@ -3,7 +3,7 @@ import time
 from sections.car_expenses.service import CarExpenseService
 from sections.car_expenses.form import car_expense_form
 from utils.error_handlers import handle_streamlit_error
-from utils.entity_import import entity_bulk_import_tab
+from utils.bulk_import import entity_bulk_import_tab
 from datetime import date
 from sections.car_expenses.form import EXPENSE_TYPE_MAP_PT_TO_EN, EXPENSE_TYPE_MAP_EN_TO_PT
 
@@ -59,7 +59,7 @@ def manual_entry_tab():
         # Try to insert the data
         try:
             with st.spinner("A adicionar dados..."):
-                CarExpenseService.insert_car_expense(expense_data)
+                CarExpenseService.insert(expense_data)
             st.success("Despesa de veículo adicionada com sucesso!")
             time.sleep(2)
             st.rerun()
@@ -139,7 +139,6 @@ def bulk_entry_tab():
         entity_name="despesas de veículos",
         service_class=CarExpenseService,
         fields_config=fields_config,
-        insert_method_name="insert_car_expense",
         help_content=help_content
     )
 

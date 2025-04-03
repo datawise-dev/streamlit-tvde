@@ -3,7 +3,7 @@ import time
 from sections.drivers.service import DriverService
 from sections.drivers.form import driver_form
 from utils.error_handlers import handle_streamlit_error
-from utils.entity_import import entity_bulk_import_tab
+from utils.bulk_import import entity_bulk_import_tab
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single driver."""
@@ -20,7 +20,7 @@ def manual_entry_tab():
 
         try:
             with st.spinner("A adicionar dados...", show_time=True):
-                DriverService.insert_driver(driver_data)
+                DriverService.insert(driver_data)
             st.success("Motorista adicionado com sucesso!")
             time.sleep(2)
             # Clear form after successful insert
@@ -100,7 +100,6 @@ def bulk_entry_tab():
         entity_name="motoristas",
         service_class=DriverService,
         fields_config=fields_config,
-        insert_method_name="insert_driver",
         help_content=help_content
     )
 

@@ -16,7 +16,7 @@ def main():
     try:
         driver_id = int(st.query_params["id"])
         # Get driver data
-        existing_data = DriverService.get_driver(driver_id)
+        existing_data = DriverService.get(driver_id)
         if not existing_data:
             # st.title("Adicionar Motorista")
             st.error("Motorista não encontrado.")

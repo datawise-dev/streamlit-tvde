@@ -17,7 +17,7 @@ def main():
     try:
         car_id = int(st.query_params["id"])
         # Get car data
-        existing_data = CarService.get_car(car_id)
+        existing_data = CarService.get(car_id)
         if not existing_data:
             st.error("Veículo não encontrado.")
             st.stop()
@@ -58,7 +58,7 @@ def main():
 
         try:
             with st.spinner("A atualizar dados...", show_time=True):
-                CarService.update_car(car_id, car_data)
+                CarService.update(car_id, data)
             st.success("Veículo atualizado com sucesso!")
         except Exception as e:
             st.error(

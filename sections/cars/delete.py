@@ -23,7 +23,7 @@ def car_delete(car_id, license_plate):
 
     if btn_delete:
         with st.spinner("A eliminar veículo...", show_time=True):
-            CarService.delete_car(car_id)
+            CarService.delete(car_id)
         st.success("Veículo eliminado com sucesso!")
         time.sleep(1.5)
         switch_page("sections/cars/page.py")

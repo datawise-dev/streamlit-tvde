@@ -24,7 +24,7 @@ def delete_revenue_records(revenue_id):
             try:
                 # Se o RevenueService não tiver um método "delete" específico,
                 # pode-se usar delete_records com um único ID numa lista
-                RevenueService.delete_records([revenue_id])
+                RevenueService.delete(revenue_id)
                 st.success("Registo eliminado com sucesso!")
                 time.sleep(1.5)
                 switch_page("sections/revenues/page.py")

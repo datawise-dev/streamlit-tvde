@@ -18,46 +18,8 @@ class HRExpenseService(BaseService):
     default_order_by = 'payment_date DESC'
     
     @classmethod
-    def validate(cls, data: Dict) -> Tuple[bool, List[str]]:
-        """
-        Validate HR expense data using the validation system.
-        
-        Args:
-            data: Dictionary containing HR expense data to validate
-            
-        Returns:
-            Tuple of (is_valid, error_messages)
-        """
-        field_validators, cross_validators = get_hr_expense_validators()
-        errors = validate_data(data, field_validators, cross_validators)
-        return len(errors) == 0, errors
-    
-    @classmethod
-    @handle_service_error("Erro ao inserir despesa")
-    def insert_expense(cls, data: Dict) -> int:
-        """
-        Insert a new HR expense record with validation.
-        
-        Args:
-            data: Dictionary containing HR expense data
-            
-        Returns:
-            ID of the newly inserted record
-            
-        Raises:
-            Exception: If validation fails or insertion error occurs
-        """
-        # Validate the data
-        is_valid, errors = cls.validate(data)
-        if not is_valid:
-            raise ValueError(f"Dados inválidos: {', '.join(errors)}")
-            
-        # Use the base class insert method
-        return cls.insert(data)
-    
-    @classmethod
     @handle_service_error("Erro ao atualizar despesa")
-    def update_expense(cls, expense_id: int, data: Dict) -> bool:
+    def update(cls, expense_id: int, data: Dict) -> bool:
         """
         Update an existing HR expense record with validation.
         
@@ -71,11 +33,6 @@ class HRExpenseService(BaseService):
         Raises:
             Exception: If validation fails or update error occurs
         """
-        # Validate the data
-        is_valid, errors = cls.validate(data)
-        if not is_valid:
-            raise ValueError(f"Dados inválidos: {', '.join(errors)}")
-            
         # Add updated_at field to the data
         data_copy = data.copy()
         data_copy['updated_at'] = 'CURRENT_TIMESTAMP'
@@ -84,26 +41,8 @@ class HRExpenseService(BaseService):
         return cls.update(expense_id, data_copy)
     
     @classmethod
-    @handle_service_error("Erro ao eliminar despesa")
-    def delete_expense(cls, expense_id: int) -> bool:
-        """
-        Delete an HR expense record.
-        
-        Args:
-            expense_id: ID of the expense to delete
-            
-        Returns:
-            True if successful
-            
-        Raises:
-            Exception: If delete error occurs
-        """
-        # Use the base class delete method
-        return cls.delete(expense_id)
-    
-    @classmethod
     @handle_service_error("Erro ao obter despesa")
-    def get_expense(cls, expense_id: int) -> Dict:
+    def get(cls, expense_id: int) -> Dict:
         """
         Get a specific HR expense record by ID, including driver name.
         This method needs custom implementation due to the JOIN with drivers table.
@@ -148,7 +87,7 @@ class HRExpenseService(BaseService):
     
     @classmethod
     @handle_service_error("Erro ao carregar despesas")
-    def load_expenses(cls) -> pd.DataFrame:
+    def get_many(cls) -> pd.DataFrame:
         """
         Load all HR expense records with driver names.
         Custom implementation needed due to JOIN and calculations.

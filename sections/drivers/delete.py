@@ -21,7 +21,7 @@ def driver_delete(driver_id, driver_name):
 
     if btn_delete:
         with st.spinner("A eliminar motorista...", show_time=True):
-            DriverService.delete_driver(driver_id)
+            DriverService.delete(driver_id)
         st.success("Motorista eliminado com sucesso!")
         time.sleep(2.5)
         switch_page("sections/drivers/page.py")

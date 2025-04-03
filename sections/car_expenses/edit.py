@@ -18,7 +18,7 @@ def main():
     try:
         expense_id = int(st.query_params["id"])
         # Get expense data
-        existing_data = CarExpenseService.get_car_expense(expense_id)
+        existing_data = CarExpenseService.get(expense_id)
         if not existing_data:
             st.error("Despesa de veículo não encontrada.")
             st.stop()

@@ -1,131 +1,35 @@
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from database.connection import get_db_connection, get_db_engine
 from utils.base_service import BaseService
 from utils.error_handlers import handle_service_error
-from utils.validators import validate_data, get_car_validators
-
 
 class CarService(BaseService):
     """
     Service for managing car data.
-    Inherits common CRUD operations from BaseService.
+    Uses standard operations from BaseService.
     """
     table_name = 'cars'
     primary_key = 'id'
     default_order_by = 'license_plate'
     
-    @classmethod
-    def validate(cls, data: Dict) -> Tuple[bool, List[str]]:
-        """
-        Validate car data using the validation system.
-        
-        Args:
-            data: Dictionary containing car data to validate
-            
-        Returns:
-            Tuple of (is_valid, error_messages)
-        """
-        field_validators, cross_validators = get_car_validators()
-        errors = validate_data(data, field_validators, cross_validators)
-        return len(errors) == 0, errors
+    # Standard methods inherited from BaseService:
+    # insert(data)
+    # update(record_id, data)
+    # delete(record_id)
+    # get(record_id)
+    # get_many(conditions, order_by)
+    
+    # Car-specific methods
     
     @classmethod
-    @handle_service_error("Erro ao inserir carro")
-    def insert_car(cls, data: Dict) -> bool:
-        """
-        Insert a new car record with validation.
-        
-        Args:
-            data: Dictionary containing car data
-            
-        Returns:
-            True if successful
-            
-        Raises:
-            Exception: If validation fails or insertion error occurs
-        """
-        # Validate the data before insertion
-        is_valid, errors = cls.validate(data)
-        if not is_valid:
-            raise ValueError(f"Dados inválidos: {', '.join(errors)}")
-            
-        return cls.insert(data)
-
-    @classmethod
-    @handle_service_error("Erro ao atualizar carro")
-    def update_car(cls, car_id: int, data: Dict) -> bool:
-        """
-        Update an existing car record with validation.
-        
-        Args:
-            car_id: ID of the car to update
-            data: Dictionary containing car data
-            
-        Returns:
-            True if successful
-            
-        Raises:
-            Exception: If validation fails or update error occurs
-        """
-        # Validate the data before update
-        is_valid, errors = cls.validate(data)
-        if not is_valid:
-            raise ValueError(f"Dados inválidos: {', '.join(errors)}")
-            
-        return cls.update(car_id, data)
-
-    @classmethod
-    @handle_service_error("Erro ao eliminar carro")
-    def delete_car(cls, car_id: int) -> bool:
-        """
-        Delete a car record.
-        
-        Args:
-            car_id: ID of the car to delete
-            
-        Returns:
-            True if successful
-            
-        Raises:
-            Exception: If delete error occurs
-        """
-        return cls.delete(car_id)
-
-    @classmethod
-    @handle_service_error("Erro ao carregar dados de carros")
-    def load_cars(cls) -> pd.DataFrame:
-        """
-        Load all cars with enhanced information.
-        
-        Returns:
-            DataFrame containing car data
-            
-        Raises:
-            Exception: If query error occurs
-        """
-        query = """
-            SELECT 
-                id, license_plate, brand, model, 
-                acquisition_cost, acquisition_date, category, 
-                COALESCE(is_active, TRUE) as is_active
-            FROM cars 
-            ORDER BY acquisition_date DESC
-        """
-        engine = get_db_engine()
-        return pd.read_sql_query(query, engine)
-    
-    @classmethod
-    @handle_service_error("Erro ao obter matrículas")
+    @handle_service_error("Error getting license plates")
     def get_all_license_plates(cls) -> List[Tuple]:
         """
         Get all available license plates from the cars table.
         
         Returns:
             List of tuples containing (id, license_plate, brand, model) for each car
-            
-        Raises:
-            Exception: If query error occurs
         """
         engine = get_db_engine()
         query = """
@@ -137,20 +41,38 @@ class CarService(BaseService):
         
         df = pd.read_sql_query(query, engine)
         return list(df.itertuples(index=False, name=None))
-
+    
     @classmethod
-    @handle_service_error("Erro ao obter carro")
-    def get_car(cls, car_id: int) -> Dict:
+    @handle_service_error("Error getting active cars")
+    def get_active_cars(cls) -> pd.DataFrame:
         """
-        Get a car's complete information by ID.
+        Get all active cars.
         
-        Args:
-            car_id: ID of the car to retrieve
-            
         Returns:
-            Dictionary containing car data or None if not found
-            
-        Raises:
-            Exception: If query error occurs
+            DataFrame containing data for active cars only
         """
-        return cls.get(car_id)
+        return cls.get_many(conditions={'is_active': True})
+    
+    @classmethod
+    @handle_service_error("Error getting car statistics")
+    def get_car_stats(cls) -> Dict:
+        """
+        Get statistics about cars.
+        
+        Returns:
+            Dictionary with statistics
+        """
+        engine = get_db_engine()
+        stats = {}
+        
+        # Total cars
+        query = "SELECT COUNT(*) FROM cars"
+        df = pd.read_sql_query(query, engine)
+        stats['total_cars'] = df.iloc[0, 0]
+        
+        # Cars by category
+        query = "SELECT category, COUNT(*) FROM cars GROUP BY category"
+        df = pd.read_sql_query(query, engine)
+        stats['cars_by_category'] = df.set_index('category').to_dict()['count']
+        
+        return stats

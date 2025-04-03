@@ -25,7 +25,7 @@ def hr_expense_delete(expense_id, driver_name=None):
     
     if btn_delete:
         with st.spinner("A eliminar despesa...", show_time=True):
-            HRExpenseService.delete_expense(expense_id)
+            HRExpenseService.delete(expense_id)
         st.success("Despesa RH eliminada com sucesso!")
         time.sleep(1.5)
         switch_page("sections/hr_expenses/page.py")

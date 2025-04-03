@@ -120,7 +120,7 @@ def show_drivers_view():
     if submit_button or "drivers_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
-                df = DriverService.load_drivers()
+                df = DriverService.get_many()
                 # Store the loaded data in session state to persist between reruns
                 st.session_state.drivers_data_loaded = True
 

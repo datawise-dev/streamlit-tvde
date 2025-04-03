@@ -114,7 +114,7 @@ def show_cars_view():
     if submit_button or "cars_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
-                df = CarService.load_cars()
+                df = CarService.get_many()
                 # Store the loaded data in session state to persist between reruns
                 st.session_state.cars_data_loaded = True
 
