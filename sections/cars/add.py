@@ -3,18 +3,20 @@ import time
 from sections.cars.service import CarService
 from sections.cars.form import car_form
 from utils.error_handlers import handle_streamlit_error
-from utils.entity_import import entity_bulk_import_tab
+from utils.bulk_import import entity_bulk_import_tab
+from utils.validators import validate_license_plate
 
 def manual_entry_tab():
     # Existing manual entry form
-    submit_button, car_data = car_form()
+    form = car_form()
+
+     # Change button text based on mode
+    submit_button, data = form.render()
 
     if submit_button:
         # Ensure acquisition_date is formatted as string
-        if isinstance(car_data.get("acquisition_date"), object):
-            car_data["acquisition_date"] = car_data["acquisition_date"].strftime(
-                "%Y-%m-%d"
-            )
+        if isinstance(data.get("acquisition_date"), object):
+            data["acquisition_date"] = data["acquisition_date"].strftime("%Y-%m-%d")
 
         try:
             with st.spinner("A adicionar dados...", show_time=True):
