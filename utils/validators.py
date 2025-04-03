@@ -8,19 +8,18 @@ Validator = Callable[[Any, str], ValidationResult]  # Function that validates a 
 FieldValidator = Tuple[str, List[Validator]]  # (field_name, list_of_validators)
 
 
-def validate_required(value: Any, field_name: str) -> ValidationResult:
+def validate_required(value: Any) -> ValidationResult:
     """
     Validates that a value is not empty or None.
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
     """
     if value is None or (isinstance(value, str) and value.strip() == ""):
-        return False, f"O campo '{field_name}' é obrigatório."
+        return False, "Este campo é obrigatório."
     return True, ""
 
 
@@ -34,9 +33,9 @@ def validate_min_length(min_length: int) -> Validator:
     Returns:
         Validator function
     """
-    def validator(value: str, field_name: str) -> ValidationResult:
+    def validator(value: str) -> ValidationResult:
         if value is not None and len(str(value)) < min_length:
-            return False, f"O campo '{field_name}' deve ter pelo menos {min_length} caracteres."
+            return False, f"Deve ter pelo menos {min_length} caracteres."
         return True, ""
     return validator
 
@@ -51,20 +50,19 @@ def validate_max_length(max_length: int) -> Validator:
     Returns:
         Validator function
     """
-    def validator(value: str, field_name: str) -> ValidationResult:
+    def validator(value: str) -> ValidationResult:
         if value is not None and len(str(value)) > max_length:
-            return False, f"O campo '{field_name}' não pode ter mais de {max_length} caracteres."
+            return False, f"Não pode ter mais de {max_length} caracteres."
         return True, ""
     return validator
 
 
-def validate_numeric(value: Any, field_name: str) -> ValidationResult:
+def validate_numeric(value: Any) -> ValidationResult:
     """
     Validates that a value is numeric (int or float).
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
@@ -73,7 +71,7 @@ def validate_numeric(value: Any, field_name: str) -> ValidationResult:
         try:
             float(value)
         except (ValueError, TypeError):
-            return False, f"O campo '{field_name}' deve ser um valor numérico."
+            return False, "Deve ser um valor numérico."
     return True, ""
 
 
@@ -87,11 +85,32 @@ def validate_min_value(min_value: Union[int, float]) -> Validator:
     Returns:
         Validator function
     """
-    def validator(value: Any, field_name: str) -> ValidationResult:
+    def validator(value: Any) -> ValidationResult:
         if value is not None:
             try:
                 if float(value) < min_value:
-                    return False, f"O campo '{field_name}' deve ser pelo menos {min_value}."
+                    return False, f"Deve ser pelo menos {min_value}."
+            except (ValueError, TypeError):
+                pass  # Let validate_numeric handle type errors
+        return True, ""
+    return validator
+
+
+def validate_min_value(min_value: Union[int, float]) -> Validator:
+    """
+    Creates a validator that checks minimum numeric value.
+    
+    Args:
+        min_value: The minimum allowed value
+        
+    Returns:
+        Validator function
+    """
+    def validator(value: Any) -> ValidationResult:
+        if value is not None:
+            try:
+                if float(value) < min_value:
+                    return False, f"Deve ser pelo menos {min_value}."
             except (ValueError, TypeError):
                 pass  # Let validate_numeric handle type errors
         return True, ""
@@ -108,24 +127,23 @@ def validate_max_value(max_value: Union[int, float]) -> Validator:
     Returns:
         Validator function
     """
-    def validator(value: Any, field_name: str) -> ValidationResult:
+    def validator(value: Any) -> ValidationResult:
         if value is not None:
             try:
                 if float(value) > max_value:
-                    return False, f"O campo '{field_name}' não pode ser maior que {max_value}."
+                    return False, f"Não pode ser maior que {max_value}."
             except (ValueError, TypeError):
                 pass  # Let validate_numeric handle type errors
         return True, ""
     return validator
 
 
-def validate_date_format(value: Any, field_name: str) -> ValidationResult:
+def validate_date_format(value: Any) -> ValidationResult:
     """
-    Validates that a value is a valid date string (YYYY-MM-DD).
+    Validates that a value is a valid date.
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
@@ -135,9 +153,9 @@ def validate_date_format(value: Any, field_name: str) -> ValidationResult:
             if isinstance(value, str):
                 datetime.strptime(value, "%Y-%m-%d")
             else:
-                return False, f"O campo '{field_name}' deve ser uma data válida no formato YYYY-MM-DD."
+                return False, "Deve ser uma data válida no formato YYYY-MM-DD."
         except ValueError:
-            return False, f"O campo '{field_name}' deve ser uma data válida no formato YYYY-MM-DD."
+            return False, "Deve ser uma data válida no formato YYYY-MM-DD."
     return True, ""
 
 
@@ -152,20 +170,19 @@ def validate_regex(pattern: str, message: str) -> Validator:
     Returns:
         Validator function
     """
-    def validator(value: str, field_name: str) -> ValidationResult:
+    def validator(value: str) -> ValidationResult:
         if value is not None and not re.match(pattern, str(value)):
-            return False, f"O campo '{field_name}' {message}"
+            return False, message
         return True, ""
     return validator
 
 
-def validate_license_plate(value: str, field_name: str) -> ValidationResult:
+def validate_license_plate(value: str) -> ValidationResult:
     """
     Validates that a value is a valid Portuguese license plate.
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
@@ -173,17 +190,16 @@ def validate_license_plate(value: str, field_name: str) -> ValidationResult:
     # Portuguese license plate format: XX-XX-XX or XX-XX-XX (newer format)
     pattern = r'^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$'
     if value is not None and not re.match(pattern, str(value)):
-        return False, f"O campo '{field_name}' deve ser uma matrícula válida no formato XX-XX-XX."
+        return False, "Deve ser uma matrícula válida no formato XX-XX-XX."
     return True, ""
 
 
-def validate_nif(value: str, field_name: str) -> ValidationResult:
+def validate_nif(value: str) -> ValidationResult:
     """
     Validates that a value is a valid Portuguese NIF (tax number).
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
@@ -193,7 +209,7 @@ def validate_nif(value: str, field_name: str) -> ValidationResult:
         
     # Check if it's a 9-digit number
     if not re.match(r'^\d{9}$', str(value)):
-        return False, f"O campo '{field_name}' deve ser um NIF válido (9 dígitos)."
+        return False, "Deve ser um NIF válido (9 dígitos)."
         
     # Validate the check digit
     try:
@@ -204,20 +220,19 @@ def validate_nif(value: str, field_name: str) -> ValidationResult:
             check_digit = 0
             
         if check_digit != nif[8]:
-            return False, f"O campo '{field_name}' tem um NIF inválido."
+            return False, "Formato de NIF inválido."
     except (ValueError, IndexError):
-        return False, f"O campo '{field_name}' tem um NIF inválido."
+        return False, "Formato de NIF inválido."
         
     return True, ""
 
 
-def validate_postal_code(value: str, field_name: str) -> ValidationResult:
+def validate_postal_code(value: str) -> ValidationResult:
     """
     Validates that a value is a valid Portuguese postal code.
     
     Args:
         value: The value to validate
-        field_name: Name of the field (for error message)
         
     Returns:
         Tuple of (is_valid, error_message)
@@ -227,7 +242,7 @@ def validate_postal_code(value: str, field_name: str) -> ValidationResult:
         
     # Portuguese postal code format: XXXX-XXX
     if not re.match(r'^\d{4}-\d{3}$', str(value)):
-        return False, f"O campo '{field_name}' deve ser um código postal válido no formato XXXX-XXX."
+        return False, "Deve ser um código postal válido no formato XXXX-XXX."
     return True, ""
 
 
@@ -289,7 +304,7 @@ def validate_data(data: Dict, field_validators: List[FieldValidator],
         value = data.get(field_name)
         
         for validator in validators:
-            is_valid, error_message = validator(value, field_name)
+            is_valid, error_message = validator(value)
             if not is_valid:
                 errors.append(error_message)
                 break  # Stop validating this field after first error
