@@ -1,95 +1,80 @@
 import streamlit as st
 from utils.error_handlers import handle_streamlit_error
+from utils.form_builder import FormBuilder
 
 
 @handle_streamlit_error()
 def car_form(existing_data=None):
     """Display form for car data with error handling."""
 
-    if existing_data is None:
-        existing_data = dict()
-        clear_form = True
-    else:
-        clear_form = False  # Don't clear when in edit mode
+    form = FormBuilder("car_form")
 
-    data = dict()
+    # --- Basic Car Information ---
+    form.create_section("Informação do Veículo")
+    form.create_field(
+        key="license_plate",
+        label="Matrícula",
+        type="text",
+        required=True,
+        # Add validator
+    )
 
-    # Create form for car data
-    with st.form("car_form", clear_on_submit=clear_form):
-        st.subheader("Informação do Veículo")
+    # --- Brand and Model ---
+    form.create_columns(2)
+    form.create_field(
+        key="brand",
+        label="Marca",
+        type="text",
+        required=True,
+    )
+    form.next_column()
+    form.create_field(
+        key="model",
+        label="Modelo",
+        type="text",
+        required=True,
+    )
+    form.end_columns()
 
-        # Basic car information
-        data["license_plate"] = st.text_input(
-            "Matrícula *",
-            value=existing_data.get("license_plate", ""),
-            help="Identificador único do veículo",
+    # --- Acquisition Cost and Date ---
+    form.create_columns(2)
+    form.create_field(
+        key="acquisition_cost",
+        label="Custo de Aquisição (€)",
+        type="number",
+        required=True,
+        min_value=0.0,
+        step=100.0,
+        format="%.2f",
+    )
+    form.next_column()
+    form.create_field(
+        key="acquisition_date",
+        label="Data de Aquisição",
+        type="date",
+        required=True,
+    )
+    form.end_columns()
+
+    # --- Category Information ---
+    form.create_field(
+        key="category",
+        label="Categoria",
+        type="select",
+        required=True,
+        options=["Economy", "Standard", "Premium", "Luxury"]
+    )
+
+    if existing_data:
+        form.create_section("status", "Estado")
+        form.create_field(
+            key="is_active",
+            label="Ativo",
+            type="checkbox",
+            required=False,
         )
 
-        col1, col2 = st.columns(2)
+    # Form submission
+    form.create_section(None, "**Campos obrigatórios*")
 
-        with col1:
-            data["brand"] = st.text_input(
-                "Marca *", value=existing_data.get("brand", "")
-            )
-
-        with col2:
-            data["model"] = st.text_input(
-                "Modelo *", value=existing_data.get("model", "")
-            )
-
-        # Cost and date information
-        col1, col2 = st.columns(2)
-
-        with col1:
-            data["acquisition_cost"] = st.number_input(
-                "Custo de Aquisição (€) *",
-                min_value=0.0,
-                value=float(existing_data.get("acquisition_cost", 0)),
-                step=100.0,
-                format="%.2f",
-            )
-
-        with col2:
-            data["acquisition_date"] = st.date_input(
-                "Data de Aquisição *", value=existing_data.get("acquisition_date")
-            )
-
-        # Category information
-        data["category"] = st.selectbox(
-            "Categoria *",
-            options=["Economy", "Standard", "Premium", "Luxury"],
-            index=(
-                ["Economy", "Standard", "Premium", "Luxury"].index(
-                    existing_data.get("category", "Standard")
-                )
-                if existing_data
-                and existing_data.get("category")
-                in ["Economy", "Standard", "Premium", "Luxury"]
-                else 1
-            ),
-        )
-
-        # Status information for existing cars
-        if existing_data:
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.subheader("Estado")
-
-            with col2:
-                data["is_active"] = st.checkbox(
-                    "Ativo",
-                    value=existing_data.get("is_active", True),
-                    help="Indica se este veículo está atualmente ativo",
-                )
-        else:
-            data["is_active"] = True
-
-        # Form submission
-        st.markdown("**Campos obrigatórios*")
-
-        # Change button text based on mode
-        button_text = "Atualizar" if existing_data else "Adicionar"
-        submit_button = st.form_submit_button(button_text, use_container_width=True)
-
-        return submit_button, data
+    return form
