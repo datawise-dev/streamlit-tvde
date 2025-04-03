@@ -55,6 +55,72 @@ class BaseService:
         return result[0] if result else None
     
     @classmethod
+    @handle_service_error("Error inserting multiple records")
+    def insert_many(cls, data_list: List[Dict]) -> List[int]:
+        """
+        Generic method to insert multiple records into the database in a single transaction.
+        
+        Args:
+            data_list: List of dictionaries containing column names and values
+            
+        Returns:
+            List of IDs of the newly inserted records
+            
+        Raises:
+            Exception: If the insert operation fails
+        """
+        cls._validate_configuration()
+        
+        if not data_list:
+            return []
+        
+        # Get all columns from all data records
+        all_columns = set()
+        for data in data_list:
+            all_columns.update(data.keys())
+        
+        # Convert to ordered list for consistent insertion
+        columns = list(all_columns)
+        
+        # Create placeholders for each record
+        placeholders = []
+        all_values = []
+        
+        # Prepare values and placeholders for each record
+        for data in data_list:
+            record_values = []
+            record_placeholders = []
+            
+            for col in columns:
+                if col in data:
+                    record_values.append(data[col])
+                    record_placeholders.append("%s")
+                else:
+                    record_values.append(None)
+                    record_placeholders.append("NULL")
+            
+            placeholders.append(f"({', '.join(record_placeholders)})")
+            all_values.extend(record_values)
+        
+        # Create the query
+        query = f"""
+            INSERT INTO {cls.table_name} ({', '.join(columns)})
+            VALUES {', '.join(placeholders)}
+            RETURNING {cls.primary_key}
+        """
+        
+        # Execute the query
+        result_ids = []
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(query, all_values)
+                results = cur.fetchall()
+                result_ids = [result[0] for result in results]
+            conn.commit()
+        
+        return result_ids
+    
+    @classmethod
     @handle_service_error("Erro ao atualizar dados")
     def update(cls, record_id: int, data: Dict) -> bool:
         """
@@ -151,9 +217,6 @@ class BaseService:
             
         Returns:
             Dictionary with record data or None if not found
-            
-        Raises:
-            Exception: If the query fails
         """
         cls._validate_configuration()
         
@@ -175,7 +238,7 @@ class BaseService:
     
     @classmethod
     @handle_service_error("Erro ao carregar dados")
-    def load_all(cls, conditions: Dict = None, order_by: str = None) -> pd.DataFrame:
+    def get_many(cls, conditions: Dict = None, order_by: str = None) -> pd.DataFrame:
         """
         Generic method to load all records that match certain conditions.
         
@@ -185,9 +248,6 @@ class BaseService:
             
         Returns:
             Pandas DataFrame with results
-            
-        Raises:
-            Exception: If the query fails
         """
         cls._validate_configuration()
         
