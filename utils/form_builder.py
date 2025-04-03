@@ -1,4 +1,5 @@
 import streamlit as st
+from typing import Callable
 
 class FormBuilder:
     def __init__(self, form_name="my_form", title=None):
@@ -12,11 +13,8 @@ class FormBuilder:
         self.form_name = form_name
         self.title = title
         self.items = []       # List of items
-        self.columns_active = False
-        self.current_column = 0
-        self.num_columns = 0
-        self.columns = None
         self.data = {}
+        self.post_submit_callbacks = []
         self.errors = []       # List to store error messages
         
     def create_section(self, title, description=None):
@@ -64,7 +62,6 @@ class FormBuilder:
             'key': key,
             'label': label,
             'type': type,
-            'column': self.current_column if self.columns_active else None,
             'required': required,  # Required appears directly in the field.
             'options': kwargs,     # Additional arguments for the field.
             'validator': validator
@@ -82,24 +79,10 @@ class FormBuilder:
         Returns:
             FormBuilder: self (for method chaining)
         """
-        self.columns_active = True
-        self.num_columns = num_columns
-        self.current_column = 0
         self.items.append({
             'item_type': 'column_group_start',
             'num_columns': num_columns
         })
-        return self
-    
-    def next_column(self):
-        """
-        Move to the next column in a multi-column layout.
-        
-        Returns:
-            FormBuilder: self (for method chaining)
-        """
-        if self.columns_active and self.current_column < self.num_columns - 1:
-            self.current_column += 1
         return self
     
     def end_columns(self):
@@ -112,8 +95,6 @@ class FormBuilder:
         self.items.append({
             'item_type': 'column_group_end'
         })
-        self.columns_active = False
-        self.current_column = 0
         return self
     
     def create_submit_button(self, label="Submit", use_full_width=False):
@@ -168,21 +149,22 @@ class FormBuilder:
                     if description:
                         st.markdown(description)
                 
-                elif item_type == 'column_group_start':
+                if item_type == 'column_group_start':
                     # Determine number of columns from the marker
                     num_cols = item.get('num_columns', 2)
                     cols = st.columns(num_cols)
                     col_idx = 0
 
-                elif item_type == 'field':
+                if item_type == 'column_group_end' or col_idx == num_cols:
+                    cols = None
+                    col_idx = 0
+                    num_cols = 0
+
+                if item_type == 'field':
                     if cols:
                         with cols[col_idx]:
                             self._render_field(item, existing_data)
                         col_idx += 1
-                        if col_idx >= num_cols:
-                            cols = None
-                            cols_idx = 0
-                            num_cols = 0
 
                     else: # outsite columns
                         self._render_field(item, existing_data)
@@ -199,11 +181,33 @@ class FormBuilder:
                 # Display error messages at the end of the form
                 if self.errors:
                     self._display_errors()
-                    return False
+                    return False, self.data
                 else:
-                    return True
+                    try:
+                        # Execute post-submit callbacks
+                        for callback, kwargs in self.post_submit_callbacks:
+                            callback(self.data, **kwargs)
+                        
+                        return True, self.data
+                    except Exception as e:
+                        st.error(f"Erro ao processar dados: {str(e)}")
+                        return False, self.data
 
-            return False
+            return False, self.data
+        
+    def add_post_submit_callback(self, callback: Callable, **callback_kwargs):
+        """
+        Add a callback to be executed after successful form submission.
+        
+        Args:
+            callback: Function to be called after submission
+            **callback_kwargs: Additional arguments to pass to the callback
+            
+        Returns:
+            EnhancedFormBuilder: self (for method chaining)
+        """
+        self.post_submit_callbacks.append((callback, callback_kwargs))
+        return self
     
     def _render_field(self, field, existing_data):
         """
@@ -310,7 +314,7 @@ class FormBuilder:
         Add a number input field to the form.
         """
         if default is None:
-            default = min_value if min_value is not None else 0
+            default = min_value if min_value is not None else 0.0
 
         # Add asterisk for required fields
         if required:
@@ -322,7 +326,7 @@ class FormBuilder:
             min_value=min_value,
             max_value=max_value,
             step=step,
-            value=default,
+            value=float(default),
             **kwargs
         )
         return value
