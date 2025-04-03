@@ -4,43 +4,21 @@ from sections.drivers.delete import driver_delete
 from sections.drivers.form import driver_form
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
+from utils.edit_helpers import check_edit_entity, edit_form_bottom
 
 @handle_streamlit_error()
 def main():
     check_query_params()
+    driver_id, existing_data = check_edit_entity("veículo", DriverService)
+    st.title(f"Editar Motorista: {existing_data.get('display_name', '')}")
 
-    if "id" not in st.query_params:
-        st.warning("ID do motorista em falta")
-        st.stop()
-
-    try:
-        driver_id = int(st.query_params["id"])
-        # Get driver data
-        existing_data = DriverService.get(driver_id)
-        if not existing_data:
-            # st.title("Adicionar Motorista")
-            st.error("Motorista não encontrado.")
-            st.stop()
-
-        st.title(f"Editar Motorista: {existing_data.get('display_name', '')}")
-
-    except (ValueError, TypeError):
-        st.error("ID de motorista inválido.")
-
-    submit_button, driver_data = driver_form(existing_data)
-
-    required_fields = ["display_name", "first_name", "last_name", "nif"]
+    form = driver_form()
+    submit_button, data = form.render(existing_data)
 
     if submit_button:
-        for k in required_fields:
-            if driver_data.get(k, ""):
-                continue
-            st.error("Todos os campos obrigatórios devem ser preenchidos")
-            st.stop()
-
         try:
             with st.spinner("A atualizar dados...", show_time=True):
-                DriverService.update(driver_id, driver_data)
+                DriverService.update(driver_id, data)
             st.success("Motorista atualizado com sucesso!")
             # Adicionar botão para voltar à lista
             # st.link_button("Voltar à Lista", "/drivers")
@@ -50,19 +28,7 @@ def main():
             st.error(str(e))
 
     # Botões de navegação e ações adicionais
-    col1, col2 = st.columns(2)
-    with col1:
-        st.page_link(
-            "sections/drivers/page.py",
-            label="Voltar à lista de Motoristas",
-            icon="⬅️",
-            use_container_width=True,
-        )
-    with col2:
-        if st.button(
-            "Eliminar Motorista", type="tertiary", icon="🗑️", use_container_width=True
-        ):
-            driver_delete(driver_id, existing_data.get("display_name", ""))
+    edit_form_bottom(driver_id, "veículo", "sections/driver/page.py", driver_delete)
 
 # Execute the main function
 main()

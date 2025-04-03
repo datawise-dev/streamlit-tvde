@@ -4,33 +4,16 @@ from sections.cars.delete import car_delete
 from sections.cars.form import car_form
 from utils.navigation import check_query_params
 from utils.error_handlers import handle_streamlit_error
-
+from utils.edit_helpers import check_edit_entity, edit_form_bottom
 
 @handle_streamlit_error()
 def main():
     check_query_params()
-
-    if "id" not in st.query_params:
-        st.warning("ID do veículo em falta")
-        st.stop()
-
-    try:
-        car_id = int(st.query_params["id"])
-        # Get car data
-        existing_data = CarService.get(car_id)
-        if not existing_data:
-            st.error("Veículo não encontrado.")
-            st.stop()
-
-        st.title(f"Editar Veículo: {existing_data.get('license_plate', '')}")
-
-    except (ValueError, TypeError):
-        st.error("ID de veículo inválido.")
-        st.stop()
+    car_id, existing_data = check_edit_entity("veículo", CarService)
+    st.title(f"Editar Veículo: {existing_data.get('license_plate', '')}")
 
     form = car_form()
-    submit_button = form.render(existing_data)
-    data = form.data
+    submit_button, data = form.render(existing_data)
 
     if submit_button:
         # Ensure acquisition_date is formatted as string
@@ -47,20 +30,7 @@ def main():
             st.error(str(e))
 
     # Botões de navegação e ações adicionais
-    col1, col2 = st.columns(2)
-    with col1:
-        st.page_link(
-            "sections/cars/page.py",
-            label="Voltar à lista de Veículos",
-            icon="⬅️",
-            use_container_width=True,
-        )
-    with col2:
-        if st.button(
-            "Eliminar Veículo", type="tertiary", icon="🗑️", use_container_width=True
-        ):
-            car_delete(car_id, existing_data.get("license_plate", ""))
-
+    edit_form_bottom(car_id, "veículo", "sections/cars/page.py", car_delete)
 
 # Execute the main function
 main()
