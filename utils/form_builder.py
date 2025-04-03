@@ -69,6 +69,9 @@ class FormBuilder:
         self.items.append(field)
         return self
     
+    def get_field_configs(self):
+        return [item for item in self.items if item['item_type'] == 'field']
+    
     def create_columns(self, num_columns=2):
         """
         Start a new row with multiple columns.

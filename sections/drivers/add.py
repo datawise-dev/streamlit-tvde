@@ -8,12 +8,13 @@ from utils.validators import validate_nif, validate_postal_code
 
 def manual_entry_tab():
     """Display the manual entry form for adding a single driver."""
-    submit_button, driver_data = driver_form()
+    form = driver_form()
+    submit_button, data = form.render()
 
     if submit_button:
         try:
             with st.spinner("A adicionar dados...", show_time=True):
-                DriverService.insert(driver_data)
+                DriverService.insert(data)
             st.success("Motorista adicionado com sucesso!")
             time.sleep(2)
             # Clear form after successful insert
