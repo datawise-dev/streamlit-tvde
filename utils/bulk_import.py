@@ -3,10 +3,10 @@ import pandas as pd
 import tempfile
 import os
 from typing import Dict, List, Callable, Tuple, Optional, Any
-import logging
 from utils.error_handlers import handle_streamlit_error
-
-logger = logging.getLogger(__name__)
+from typing import Dict, List, Callable, Any, Type, Tuple
+from utils.base_service import BaseService
+from utils.entity_import import create_generic_uploader, create_record_validator
 
 
 def load_file(uploaded_file) -> Optional[Tuple[pd.DataFrame, List[str]]]:
@@ -45,7 +45,7 @@ def load_file(uploaded_file) -> Optional[Tuple[pd.DataFrame, List[str]]]:
         
     except Exception as e:
         st.error(f"Erro ao processar o ficheiro: {str(e)}")
-        logger.exception("Error loading file")
+        print("Error loading file")
         return None
         
     finally:
@@ -54,7 +54,7 @@ def load_file(uploaded_file) -> Optional[Tuple[pd.DataFrame, List[str]]]:
             try:
                 os.unlink(tmp_filepath)
             except Exception as e:
-                logger.warning(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
+                print(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
                 # On Windows, sometimes files can't be deleted immediately
                 # Schedule for deletion on program exit
                 import atexit
@@ -95,13 +95,13 @@ def column_mapping_ui(
     # Create two-column layout for each field mapping
     for field_def in fields_config:
         field = field_def.get('key')
-        display_name = field_def.get('display_name', field)
+        display_name = field_def.get('label', field)
         required = field_def.get('required', False)
 
         # Try to find a matching column automatically
         default_index = 0
         for i, col in enumerate(file_columns):
-            col_formatted = col.lower().replace(" ", "_")
+            col_formatted = str(col).lower().replace(" ", "_")
             field_formatted = field.lower().replace(" ", "_")
             name_formatted = display_name.lower().replace(" ", "_")
 
@@ -200,7 +200,7 @@ def process_row(
                     else:
                         record[field] = None
                 except Exception as e:
-                    logger.error(
+                    print(
                         f"Error parsing date in row {index+2}, column {column}: {str(e)}"
                     )
                     record[field] = row[column]  # Let validation catch this
@@ -213,7 +213,6 @@ def process_row(
 def validate_and_process_data(
     df: pd.DataFrame,
     column_mapping: Dict[str, str],
-    validation_function: Callable,
     fields_config: List[Dict[str, Any]]
 ) -> Tuple[List[Dict], List[Dict]]:
     """
@@ -222,7 +221,6 @@ def validate_and_process_data(
     Args:
         df: DataFrame containing the data to process
         column_mapping: Dictionary mapping standard fields to file columns
-        validation_function: Function that validates a data record
         fields_config: List of field configurations with key, display_name, validators, etc.
         
     Returns:
@@ -230,6 +228,8 @@ def validate_and_process_data(
     """
     valid_records = []
     error_records = []
+
+    record_validator = create_record_validator(fields_config)
 
     with st.spinner("A validar dados..."):
         progress_bar = st.progress(0)
@@ -246,7 +246,7 @@ def validate_and_process_data(
                     record[field] = field_def['default_value']
             
             # Validate the record
-            is_valid, error_messages = validation_function(record)
+            is_valid, error_messages = record_validator(record)
 
             if is_valid:
                 valid_records.append(record)
@@ -379,7 +379,7 @@ def load_excel_sheet(uploaded_file, sheet_index: int = 0) -> pd.DataFrame:
         
     except Exception as e:
         st.error(f"Erro ao carregar a folha selecionada: {str(e)}")
-        logger.exception("Error loading Excel sheet")
+        print("Error loading Excel sheet")
         return None
         
     finally:
@@ -388,7 +388,7 @@ def load_excel_sheet(uploaded_file, sheet_index: int = 0) -> pd.DataFrame:
             try:
                 os.unlink(tmp_filepath)
             except Exception as e:
-                logger.warning(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
+                print(f"Could not delete temporary file {tmp_filepath}: {str(e)}")
                 # Schedule for deletion on program exit
                 import atexit
                 atexit.register(lambda file=tmp_filepath: os.path.exists(file) and os.remove(file))
@@ -398,7 +398,6 @@ def load_excel_sheet(uploaded_file, sheet_index: int = 0) -> pd.DataFrame:
 def bulk_import_component(
     entity_name: str,
     fields_config: List[Dict[str, Any]],
-    validation_function: Callable,
     upload_function: Callable,
 ):
     """
@@ -407,12 +406,9 @@ def bulk_import_component(
     Args:
         entity_name: Name of the entity being imported (e.g., "receitas", "motoristas")
         fields_config: List of field configurations with key, display_name, validators, etc.
-        validation_function: Function that validates a data record
         upload_function: Function that uploads validated data
     """
     # Extract standard fields from fields_config
-    standard_fields = [field_def.get('key') for field_def in fields_config]
-
     st.subheader(f"Importação em Massa de {entity_name.capitalize()}")
 
     css = """
@@ -468,7 +464,7 @@ def bulk_import_component(
                 
             # Process and validate data
             valid_records, error_records = validate_and_process_data(
-                df, column_mapping, validation_function, fields_config
+                df, column_mapping, fields_config
             )
             
             # Display validation results
@@ -501,3 +497,35 @@ def get_sample_csv_template(
     sample_row = ",".join([""] * len(field_names))
 
     return f"{header_row}\n{sample_row}"
+
+def entity_bulk_import_tab(
+    entity_name: str,
+    service_class: Type[BaseService],
+    fields_config: List[Dict[str, Any]],
+    help_content: Dict[str, str] = None,
+):
+    """
+    Renders a bulk import tab for an entity type.
+
+    Args:
+        entity_name: Name of the entity (e.g., "cars", "drivers")
+        service_class: The service class for the entity
+        fields_config: List of field configurations with key, display_name, validators, etc.
+        help_content: Optional help content to display in expanders
+    """
+    # Create validator and uploader functions
+    uploader = create_generic_uploader(service_class)
+
+    # Use the bulk import component
+    with st.container(border=1):
+        bulk_import_component(
+            entity_name=entity_name,
+            fields_config=fields_config,
+            upload_function=uploader,
+        )
+
+    # Display help content if provided
+    if help_content:
+        for title, content in help_content.items():
+            with st.expander(title):
+                st.info(content)
