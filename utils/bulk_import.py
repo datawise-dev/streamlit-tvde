@@ -101,32 +101,21 @@ def column_mapping_ui(
         # Try to find a matching column automatically
         default_index = 0
         for i, col in enumerate(file_columns):
-            if (
-                col.lower().replace(" ", "_") == field.lower()
-                or col.lower() == field.lower()
-            ):
+            col_formatted = col.lower().replace(" ", "_")
+            field_formatted = field.lower().replace(" ", "_")
+            name_formatted = display_name.lower().replace(" ", "_")
+
+            if col_formatted in [field_formatted, name_formatted]:
                 default_index = i
                 break
 
-        # Create a two-column layout for each field
-        col1, col2 = st.columns([2, 3])
-
-        with col1:
-            # Right-align the label with HTML (add asterisk for required fields)
-            required_marker = " *" if required else ""
-            st.markdown(
-                f"<div style='text-align: right'><strong>{display_name}{required_marker}</strong></div>",
-                unsafe_allow_html=True,
-            )
-
-        with col2:
-            selected_column = st.selectbox(
-                label="",  # Empty label since we're using the column to the left
-                options=file_columns,
-                index=default_index,
-                key=f"mapping_{field}",
-                label_visibility="collapsed",
-            )
+        required_marker = " *" if required else ""
+        selected_column = st.selectbox(
+            label=f"{display_name}{required_marker}",
+            options=file_columns,
+            index=default_index,
+            key=f"mapping_{field}",
+        )
 
         if selected_column != "-- Não Mapear --":
             column_mapping[field] = selected_column
