@@ -4,6 +4,7 @@ from sections.ga_expenses.service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
 from sections.ga_expenses.delete import ga_expense_delete
+from sections.ga_expenses.form import expense_type_options
 
 
 def ga_expense_row(expense):
@@ -88,15 +89,7 @@ def show_ga_expenses_view():
         with col1:
             expense_type_filter = st.selectbox(
                 "Filtrar por Tipo de Despesa",
-                options=[
-                    "Todos",
-                    "Renda",
-                    "Licenças - RNAVT",
-                    "Seguro",
-                    "Eletricidade",
-                    "Água",
-                    "Outros",
-                ],
+                options=expense_type_options,
                 index=0,
                 help="Filtrar despesas por tipo",
             )
@@ -148,20 +141,8 @@ def show_ga_expenses_view():
         filtered_df = df.copy()
 
         if expense_type_filter != "Todos":
-            # Map back to English for the filter since the database uses English terms
-            expense_type_map = {
-                "Todos": "All",
-                "Renda": "Rental",
-                "Licenças - RNAVT": "Licences - RNAVT",
-                "Seguro": "Insurance",
-                "Eletricidade": "Electricity",
-                "Água": "Water",
-                "Outros": "Other"
-            }
-            english_filter = expense_type_map.get(expense_type_filter, expense_type_filter)
-            filtered_df = filtered_df[
-                filtered_df["expense_type"] == english_filter
-            ]
+            filt = filtered_df["expense_type"] == expense_type_filter
+            filtered_df = filtered_df[filt]
 
         if description_filter:
             description_filter = description_filter.lower()
@@ -202,25 +183,8 @@ def show_ga_expenses_view():
 
         st.divider()
 
-        # Map expense types to Portuguese for display
-        type_map = {
-            "Rental": "Renda",
-            "Licences - RNAVT": "Licenças - RNAVT",
-            "Insurance": "Seguro",
-            "Electricity": "Eletricidade",
-            "Water": "Água",
-            "Other": "Outros"
-        }
-        
-        # Display each G&A expense as a compact row
         for i, (_, expense) in enumerate(filtered_df.iterrows()):
-            # Translate expense type for display if needed
-            if expense['expense_type'] in type_map:
-                expense_pt = expense.copy()
-                expense_pt['expense_type'] = type_map[expense['expense_type']]
-                ga_expense_row(expense_pt)
-            else:
-                ga_expense_row(expense)
+            ga_expense_row(expense)
 
 
 # Execute the function if this file is run directly
