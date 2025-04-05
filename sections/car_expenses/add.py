@@ -1,8 +1,7 @@
 import streamlit as st
 from sections.car_expenses.service import CarExpenseService
-from sections.car_expenses.form import car_expense_form, EXPENSE_TYPE_MAP_PT_TO_EN
+from sections.car_expenses.form import car_expense_form, car_expense_types
 from utils.page_generators import generate_add_page
-from utils.error_handlers import handle_streamlit_error
 
 # Instruções personalizadas para importação em massa de despesas de veículos
 car_expenses_help_content = {
@@ -17,7 +16,7 @@ car_expenses_help_content = {
     """,
     "Tipos de Despesa": f"""
     Os tipos de despesa disponíveis são:
-    {', '.join([f"- {en} ({pt})" for pt, en in EXPENSE_TYPE_MAP_PT_TO_EN.items()])}
+    {', '.join(car_expense_types)}
     
     Nota: Use os valores em inglês na coluna do tipo de despesa.
     """
