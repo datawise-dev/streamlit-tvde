@@ -40,9 +40,8 @@ class DriverService(BaseService):
                 result = cur.fetchone()
                 if result:
                     raise ValueError("Já existe um motorista com o mesmo Nome ou NIF")
-        
         # If validation passes, use the base class insert method
-        return cls.insert(data)
+        return super().insert(data)
 
     @classmethod
     @handle_service_error("Erro ao atualizar motorista")
@@ -74,4 +73,4 @@ class DriverService(BaseService):
                     raise ValueError("Já existe outro motorista com o mesmo Nome ou NIF")
         
         # If validation passes, use the base class update method
-        return cls.update(driver_id, data)
+        return super().update(driver_id, data)

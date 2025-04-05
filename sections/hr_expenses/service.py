@@ -38,7 +38,7 @@ class HRExpenseService(BaseService):
         data_copy['updated_at'] = 'CURRENT_TIMESTAMP'
         
         # Use the base class update method
-        return cls.update(expense_id, data_copy)
+        return super().update(expense_id, data_copy)
     
     @classmethod
     @handle_service_error("Erro ao obter despesa")
