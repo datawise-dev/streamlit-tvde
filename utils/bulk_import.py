@@ -160,7 +160,8 @@ def validate_mapping(
 
 def process_row(
     row: pd.Series, 
-    column_mapping: Dict[str, str], 
+    column_mapping: Dict[str, str],
+    fields_config: List[Dict[str, Any]],
     index: int
 ) -> Dict[str, any]:
     """
@@ -176,37 +177,71 @@ def process_row(
     """
     record = {}
 
-    # Map the columns to fields
+    # Create a lookup dictionary for field types and defaults
+    field_types = {}
+    field_defaults = {}
+    
+    for field_def in fields_config:
+        if 'key' in field_def:
+            key = field_def.get('key')
+            field_types[key] = field_def.get('type', 'text')
+            if 'default_value' in field_def:
+                field_defaults[key] = field_def['default_value']
+    
+    # Map the columns to fields with type conversion
     for field, column in column_mapping.items():
-        # Handle both numerical and non-numerical fields
+        # Skip if the column doesn't exist in the row
+        if column not in row:
+            continue
+            
+        # Skip if the value is missing
         if pd.isna(row[column]):
             record[field] = None
-        else:
-            # Handle date columns specially
-            if field in [
-                "start_date",
-                "end_date",
-                "payment_date",
-                "acquisition_date",
-            ]:
-                try:
-                    # Try to convert to ISO date format string
-                    if isinstance(row[column], str):
-                        date_obj = pd.to_datetime(row[column])
-                        record[field] = date_obj.strftime("%Y-%m-%d")
-                    elif pd.notna(row[column]):
-                        # Handle pandas Timestamp or datetime
-                        record[field] = row[column].strftime("%Y-%m-%d")
-                    else:
-                        record[field] = None
-                except Exception as e:
-                    print(
-                        f"Error parsing date in row {index+2}, column {column}: {str(e)}"
-                    )
-                    record[field] = row[column]  # Let validation catch this
+            continue
+            
+        value = row[column]
+        field_type = field_types.get(field, 'text')  # Default to text if type not found
+        
+        # Convert the value based on the field type
+        try:
+            if field_type == 'number':
+                # Keep as numeric
+                record[field] = float(value) if '.' in str(value) else int(value)
+            elif field_type in ['date', 'datetime']:
+                # Handle date conversion
+                if isinstance(value, str):
+                    date_obj = pd.to_datetime(value)
+                    record[field] = date_obj.strftime("%Y-%m-%d")
+                elif pd.notna(value):
+                    # Handle pandas Timestamp or datetime
+                    record[field] = value.strftime("%Y-%m-%d")
+                else:
+                    record[field] = None
+            elif field_type == 'checkbox' or field_type == 'toggle':
+                # Convert to boolean
+                if isinstance(value, bool):
+                    record[field] = value
+                elif isinstance(value, (int, float)):
+                    record[field] = bool(value)
+                elif isinstance(value, str):
+                    record[field] = value.lower() in ['true', 'yes', '1', 'sim', 'verdadeiro']
+                else:
+                    record[field] = bool(value)
             else:
-                record[field] = row[column]
-                
+                # For text, select, textarea, etc. - convert to string
+                record[field] = str(value)
+                # Remove trailing ".0" from numeric strings (common Excel artifact)
+                if record[field].endswith('.0') and field_type not in ['number']:
+                    record[field] = record[field][:-2]
+        except Exception as e:
+            print(f"Error converting {field} in row {index+2}: {str(e)}")
+            record[field] = value  # Use original value and let validation catch issues
+    
+    # Apply default values for fields not in the record
+    for field, default_value in field_defaults.items():
+        if field not in record or record[field] is None:
+            record[field] = default_value
+
     return record
 
 
@@ -237,13 +272,7 @@ def validate_and_process_data(
 
         for index, row in df.iterrows():
             # Process the row
-            record = process_row(row, column_mapping, index)
-            
-            # Apply default values for fields not in the data
-            for field_def in fields_config:
-                field = field_def.get('key')
-                if field not in record and 'default_value' in field_def:
-                    record[field] = field_def['default_value']
+            record = process_row(row, column_mapping, fields_config, index)                
             
             # Validate the record
             is_valid, error_messages = record_validator(record)
