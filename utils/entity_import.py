@@ -136,13 +136,19 @@ def create_generic_uploader(service_class: Type[BaseService]) -> Callable:
         # Process each record individually
         success_count = 0
         errors = []
+        progress_bar = st.progress(0)
+        total_rows = len(records)
 
-        for record in records:
+        for index, record in enumerate(records):
+            
             try:
                 service_class.insert(record)
                 success_count += 1
             except Exception as e:
                 errors.append(str(e))
+            
+            # Update progress
+            progress_bar.progress((index + 1) / total_rows)
 
         if errors:
             if len(errors) == len(records):

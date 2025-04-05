@@ -267,8 +267,6 @@ def validate_and_process_data(
     record_validator = create_record_validator(fields_config)
 
     with st.spinner("A validar dados..."):
-        progress_bar = st.progress(0)
-        total_rows = len(df)
 
         for index, row in df.iterrows():
             # Process the row
@@ -285,9 +283,6 @@ def validate_and_process_data(
                     "errors": error_messages,
                 }
                 error_records.append(error_info)
-
-            # Update progress
-            progress_bar.progress((index + 1) / total_rows)
             
     return valid_records, error_records
 
