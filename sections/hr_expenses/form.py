@@ -83,8 +83,8 @@ def hr_expense_form(existing_data=None):
         label="Dias Úteis Trabalhados",
         type="number",
         required=True,
-        min_value=0,
-        step=1,
+        min_value=0.0,
+        step=1.0,
         help="Número de dias úteis trabalhados no período"
     )
     form.end_columns()
