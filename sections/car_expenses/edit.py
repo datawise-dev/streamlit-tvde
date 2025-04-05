@@ -3,7 +3,6 @@ from sections.car_expenses.service import CarExpenseService
 from sections.car_expenses.form import car_expense_form
 from sections.car_expenses.delete import car_expense_delete
 from utils.page_generators import generate_edit_page
-from utils.error_handlers import handle_streamlit_error
 
 # Gerar a página de edição diretamente no nível do módulo
 generate_edit_page(
