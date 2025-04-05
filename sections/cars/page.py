@@ -65,7 +65,7 @@ def car_card(car):
                 "Eliminar",
                 key=f"delete_{car['id']}",
                 on_click=car_delete,
-                args=(car["id"], car["license_plate"]),
+                args=(car["id"], ),
                 type="secondary",
                 icon="🗑️",
                 use_container_width=True,

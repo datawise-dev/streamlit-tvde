@@ -62,7 +62,7 @@ def revenue_row(revenue):
                 key=f"delete_{revenue['id']}",
                 on_click=delete_revenue_records,
                 type="tertiary",
-                args=(revenue["id"],),
+                args=(revenue["id"], ),
                 help="Eliminar este registo",
             )
 

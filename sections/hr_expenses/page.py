@@ -60,7 +60,7 @@ def hr_expense_row(expense):
                 key=f"delete_{expense['id']}",
                 on_click=hr_expense_delete,
                 type="tertiary",
-                args=(expense["id"], expense["driver_name"]),
+                args=(expense["id"], ),
                 help="Eliminar esta despesa",
             )
 

@@ -72,7 +72,7 @@ def ga_expense_row(expense):
                 key=f"delete_{expense['id']}",
                 on_click=ga_expense_delete,
                 type="tertiary",
-                args=(expense["id"],),
+                args=(expense["id"], ),
                 help="Eliminar esta despesa",
             )
 

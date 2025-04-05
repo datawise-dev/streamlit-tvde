@@ -79,7 +79,7 @@ def driver_card(driver):
                 "Eliminar",
                 key=f"delete_{driver['id']}",
                 on_click=driver_delete,
-                args=(driver["id"], driver["display_name"]),
+                args=(driver["id"], ),
                 type="secondary",
                 icon="🗑️",
                 use_container_width=True,
