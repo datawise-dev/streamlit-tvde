@@ -3,7 +3,7 @@ import pandas as pd
 from sections.ga_expenses.service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.ga_expenses.delete import ga_expense_delete
+from sections.ga_expenses.delete import ga_expense_delete, delete_all_ga_expenses
 from sections.ga_expenses.form import expense_type_options
 
 
@@ -81,15 +81,20 @@ def ga_expense_row(expense):
 def show_ga_expenses_view():
     """Display the G&A expenses management view with custom cards layout."""
     st.title("Gestão de Despesas G&A")
+    
+    # Armazenar os IDs filtrados para o botão eliminar
+    filtered_ids = []
 
     # Search form
     with st.form("search_ga_expenses_form"):
         col1, col2 = st.columns(2)
 
         with col1:
+            # Adicionando "Todos" à lista de opções
+            all_expense_types = ["Todos"] + expense_type_options
             expense_type_filter = st.selectbox(
                 "Filtrar por Tipo de Despesa",
-                options=expense_type_options,
+                options=all_expense_types,
                 index=0,
                 help="Filtrar despesas por tipo",
             )
@@ -113,14 +118,6 @@ def show_ga_expenses_view():
             )
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
-
-    # Add New G&A Expense button at the top
-    st.page_link(
-        "sections/ga_expenses/add.py",
-        label="Adicionar Nova Despesa G&A",
-        icon="➕",
-        use_container_width=True,
-    )
 
     if submit_button or "ga_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
@@ -166,6 +163,32 @@ def show_ga_expenses_view():
                     (filtered_df["payment_date"] >= pd.to_datetime(date_range[0]))
                     & (filtered_df["payment_date"] <= pd.to_datetime(date_range[1]))
                 ]
+        
+        # Armazenar os IDs filtrados
+        filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
+        
+        # Add New G&A Expense and Delete All buttons side by side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/ga_expenses/add.py",
+                label="Adicionar Nova Despesa G&A",
+                icon="➕",
+                use_container_width=True,
+            )
+
+        # O botão de eliminar todas será exibido apenas se houver despesas filtradas
+        with col2:
+            if filtered_ids:
+                st.button(
+                    "🗑️ Eliminar Todas",
+                    key="delete_all_button",
+                    on_click=delete_all_ga_expenses,
+                    type="tertiary",
+                    args=(filtered_ids,),
+                    help=f"Eliminar todas as {len(filtered_ids)} despesas G&A filtradas",
+                    use_container_width=True,
+                )
 
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} despesas G&A encontradas")
@@ -185,6 +208,16 @@ def show_ga_expenses_view():
 
         for i, (_, expense) in enumerate(filtered_df.iterrows()):
             ga_expense_row(expense)
+    else:
+        # Add New G&A Expense button before any search
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/ga_expenses/add.py",
+                label="Adicionar Nova Despesa G&A",
+                icon="➕",
+                use_container_width=True,
+            )
 
 
 # Execute the function if this file is run directly
