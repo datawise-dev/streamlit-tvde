@@ -88,14 +88,6 @@ def show_hr_expenses_view():
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
 
-    # Add New HR Expense button at the top
-    st.page_link(
-        "sections/hr_expenses/add.py",
-        label="Adicionar Nova Despesa RH",
-        icon="➕",
-        use_container_width=True,
-    )
-
     if submit_button or "hr_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:

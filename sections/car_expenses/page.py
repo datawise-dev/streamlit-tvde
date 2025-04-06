@@ -113,14 +113,6 @@ def show_car_expenses_view():
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
 
-    # Add New Car Expense button at the top
-    st.page_link(
-        "sections/car_expenses/add.py",
-        label="Adicionar Nova Despesa de Veículo",
-        icon="➕",
-        use_container_width=True,
-    )
-
     if submit_button or "car_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:

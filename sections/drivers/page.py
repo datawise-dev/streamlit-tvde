@@ -109,14 +109,6 @@ def show_drivers_view():
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
 
-    # Add New Driver button at the top
-    st.page_link(
-        "sections/drivers/add.py",
-        label="Adicionar Novo Motorista",
-        icon="➕",
-        use_container_width=True,
-    )
-
     if submit_button or "drivers_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
@@ -171,7 +163,7 @@ def show_drivers_view():
                     help=f"Eliminar todos os {len(filtered_ids)} motoristas filtrados",
                     use_container_width=True,
                 )
-
+        
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} motoristas encontrados")
 
