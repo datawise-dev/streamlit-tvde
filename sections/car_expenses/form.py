@@ -25,14 +25,15 @@ def car_expense_form(existing_data=None):
 
     # Car selection
     try:
-        cars = CarService.get_all_license_plates()
-        if not cars:
+        cars = CarService.get_many(conditions={'is_active': True})
+        if cars.empty:
             car_options = {}
             st.warning("Não existem veículos disponíveis no sistema")
         else:
             # Create a dictionary for car selection
             car_options = {
-                car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars
+                car['id']: car['license_plate']
+                for _, car in cars.iterrows()
             }
 
         form.create_field(
