@@ -3,7 +3,7 @@ import pandas as pd
 from sections.cars.service import CarService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.cars.delete import car_delete
+from sections.cars.delete import delete_car
 
 
 def car_card(car):
@@ -64,7 +64,7 @@ def car_card(car):
             st.button(
                 "Eliminar",
                 key=f"delete_{car['id']}",
-                on_click=car_delete,
+                on_click=delete_car,
                 args=(car["id"], ),
                 type="secondary",
                 icon="🗑️",

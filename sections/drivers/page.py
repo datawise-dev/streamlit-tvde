@@ -3,7 +3,7 @@ import pandas as pd
 from sections.drivers.service import DriverService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.drivers.delete import driver_delete
+from sections.drivers.delete import delete_driver
 
 
 def driver_card(driver):
@@ -78,7 +78,7 @@ def driver_card(driver):
             st.button(
                 "Eliminar",
                 key=f"delete_{driver['id']}",
-                on_click=driver_delete,
+                on_click=delete_driver,
                 args=(driver["id"], ),
                 type="secondary",
                 icon="🗑️",

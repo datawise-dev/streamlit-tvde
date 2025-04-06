@@ -3,7 +3,7 @@ import pandas as pd
 from sections.ga_expenses.service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.ga_expenses.delete import ga_expense_delete, delete_all_ga_expenses
+from sections.ga_expenses.delete import delete_ga_expense, delete_all_ga_expenses
 from sections.ga_expenses.form import expense_type_options
 
 
@@ -70,7 +70,7 @@ def ga_expense_row(expense):
             st.button(
                 "🗑️",
                 key=f"delete_{expense['id']}",
-                on_click=ga_expense_delete,
+                on_click=delete_ga_expense,
                 type="tertiary",
                 args=(expense["id"], ),
                 help="Eliminar esta despesa",

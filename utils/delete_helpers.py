@@ -7,7 +7,8 @@ from utils.base_service import BaseService
 
 
 @handle_streamlit_error()
-def generic_delete_page(
+@st.dialog("Eliminar Registo")
+def generic_record_delete(
     entity_id: int,
     entity_name: str,
     service_class: Type[BaseService],

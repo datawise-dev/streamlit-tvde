@@ -3,7 +3,7 @@ import pandas as pd
 from sections.car_expenses.service import CarExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.car_expenses.delete import car_expense_delete
+from sections.car_expenses.delete import delete_car_expense
 
 
 def car_expense_row(expense):
@@ -61,7 +61,7 @@ def car_expense_row(expense):
             st.button(
                 "🗑️",
                 key=f"delete_{expense['id']}",
-                on_click=car_expense_delete,
+                on_click=delete_car_expense,
                 type="tertiary",
                 args=(expense["id"], ),
                 help="Eliminar esta despesa",

@@ -1,7 +1,7 @@
 import streamlit as st
 from sections.hr_expenses.service import HRExpenseService
 from sections.hr_expenses.form import hr_expense_form
-from sections.hr_expenses.delete import hr_expense_delete
+from sections.hr_expenses.delete import delete_hr_expense
 from utils.page_generators import generate_edit_page
 from utils.error_handlers import handle_streamlit_error
 
@@ -12,6 +12,6 @@ generate_edit_page(
     list_page_path="sections/hr_expenses/page.py",
     form_class=hr_expense_form,
     service_class=HRExpenseService,
-    delete_dialog=hr_expense_delete,
+    delete_dialog=delete_hr_expense,
     success_message="Despesa RH atualizada com sucesso!"
 )

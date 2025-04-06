@@ -1,6 +1,6 @@
 from sections.cars.service import CarService
 from sections.cars.form import car_form
-from sections.cars.delete import car_delete
+from sections.cars.delete import delete_car
 from utils.page_generators import generate_edit_page
 
 # Gerar a página de edição diretamente no nível do módulo
@@ -10,6 +10,6 @@ generate_edit_page(
     list_page_path="sections/cars/page.py", # URL em inglês para navegação
     form_class=car_form,
     service_class=CarService,
-    delete_dialog=car_delete,
+    delete_dialog=delete_car,
     success_message="Veículo atualizado com sucesso!"
 )

@@ -3,7 +3,7 @@ import pandas as pd
 from sections.hr_expenses.service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.hr_expenses.delete import hr_expense_delete
+from sections.hr_expenses.delete import delete_hr_expense
 
 
 def hr_expense_row(expense):
@@ -58,7 +58,7 @@ def hr_expense_row(expense):
             st.button(
                 "🗑️",
                 key=f"delete_{expense['id']}",
-                on_click=hr_expense_delete,
+                on_click=delete_hr_expense,
                 type="tertiary",
                 args=(expense["id"], ),
                 help="Eliminar esta despesa",

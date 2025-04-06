@@ -1,13 +1,12 @@
 import streamlit as st
 from typing import List
 from sections.ga_expenses.service import GAExpenseService
-from utils.delete_helpers import generic_delete_page, generic_bulk_delete
+from utils.delete_helpers import generic_record_delete, generic_bulk_delete
 
 
-@st.dialog("Eliminar Despesa G&A")
-def ga_expense_delete(expense_id):
+def delete_ga_expense(expense_id):
     """Dialog to confirm deletion of a G&A expense record."""
-    generic_delete_page(
+    generic_record_delete(
         entity_id=expense_id,
         entity_name="despesa G&A",
         service_class=GAExpenseService,
