@@ -209,16 +209,6 @@ def show_ga_expenses_view():
 
         for i, (_, expense) in enumerate(filtered_df.iterrows()):
             ga_expense_row(expense)
-    else:
-        # Add New G&A Expense button before any search
-        col1, col2 = st.columns(2)
-        with col1:
-            st.page_link(
-                "sections/ga_expenses/add.py",
-                label="Adicionar Nova Despesa G&A",
-                icon="➕",
-                use_container_width=True,
-            )
 
 
 # Execute the function if this file is run directly
