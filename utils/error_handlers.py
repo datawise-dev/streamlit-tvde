@@ -1,12 +1,7 @@
 import functools
-import logging
 import traceback
 import psycopg2
-from typing import Callable, Dict, Type, Any, Optional
-import inspect
-
-# Configure logging
-logger = logging.getLogger(__name__)
+from typing import Dict, Type, Any, Optional
 
 # Map of exception types to friendly error messages
 ERROR_MESSAGES = {
@@ -71,13 +66,7 @@ def handle_error(
                 context += func.__name__
                 
                 # Log the error
-                if log_traceback:
-                    logger.error(
-                        f"Error in {context}: {detailed_message}",
-                        exc_info=True
-                    )
-                else:
-                    logger.error(f"Error in {context}: {detailed_message}")
+                print(f"Error in {context}: {detailed_message}")
                 
                 # Re-raise or return a standardized error response
                 if reraise:
@@ -119,10 +108,7 @@ def handle_service_error(error_message: str = "Erro no serviço"):
                     context = func.__name__
                 
                 # Log with detailed traceback for diagnostics
-                logger.error(
-                    f"Service error in {context}: {str(e)}",
-                    exc_info=True
-                )
+                print(f"Service error in {context}: {str(e)}")
                 
                 # Check if it's a known exception type
                 for exc_type, message in ERROR_MESSAGES.items():
@@ -154,10 +140,7 @@ def handle_streamlit_error():
                 import streamlit as st
                 
                 # Log the error with traceback
-                logger.error(
-                    f"UI error in {func.__name__}: {str(e)}",
-                    exc_info=True
-                )
+                print(f"UI error in {func.__name__}: {str(e)}")
                 
                 # Get a friendly error message
                 friendly_message = "Ocorreu um erro ao processar o pedido."
