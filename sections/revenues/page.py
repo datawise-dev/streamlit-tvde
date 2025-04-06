@@ -3,7 +3,7 @@ import pandas as pd
 from sections.revenues.service import RevenueService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.revenues.delete import delete_revenue_records
+from sections.revenues.delete import delete_revenue
 
 
 def revenue_row(revenue):
@@ -60,7 +60,7 @@ def revenue_row(revenue):
             st.button(
                 "🗑️",
                 key=f"delete_{revenue['id']}",
-                on_click=delete_revenue_records,
+                on_click=delete_revenue,
                 type="tertiary",
                 args=(revenue["id"], ),
                 help="Eliminar este registo",
