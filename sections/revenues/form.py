@@ -1,31 +1,57 @@
 import streamlit as st
+from utils.error_handlers import handle_streamlit_error
+from utils.form_builder import FormBuilder
+from datetime import date
 from sections.drivers.service import DriverService
 from sections.cars.service import CarService
-from utils.error_handlers import handle_streamlit_error
-
 
 @handle_streamlit_error()
 def revenue_form(existing_data=None):
-    """Display and handle the revenue entry form with simplified loading."""
+    """Display form for revenue data with error handling using FormBuilder."""
 
-    if existing_data is None:
-        existing_data = {}
-        clear_form = True
-    else:
-        clear_form = False  # Não limpar quando estiver em modo de edição
+    form = FormBuilder("revenue_form")
 
-    data = {}
+    # Period information
+    form.create_section("Período e Plataforma")
+    
+    form.create_columns(2)
+    form.create_field(
+        key="start_date",
+        label="Data Início",
+        type="date",
+        required=True,
+        help="Data de início do período de receita"
+    )
+    
+    form.create_field(
+        key="end_date",
+        label="Data Fim",
+        type="date",
+        required=True,
+        help="Data de fim do período de receita"
+    )
+    form.end_columns()
+    
+    # Platform selection
+    form.create_field(
+        key="platform",
+        label="Plataforma",
+        type="select",
+        required=True,
+        options=["Uber", "Bolt", "Transfer"],
+        help="Selecione a plataforma onde o serviço foi prestado"
+    )
 
-    # Carregar dados dos motoristas e veículos diretamente
+    # Driver and Car section
+    form.create_section("Motorista e Veículo")
+    
+    # Load drivers
     try:
-        # Se estamos num formulário com datas existentes, usamos essas datas para filtrar motoristas ativos
-        if (
-            existing_data
-            and "start_date" in existing_data
-            and "end_date" in existing_data
-        ):
+        # If we have existing dates, use them to filter active drivers
+        if existing_data and "start_date" in existing_data and "end_date" in existing_data:
             start_date_str = existing_data["start_date"]
             end_date_str = existing_data["end_date"]
+            
             if isinstance(start_date_str, str) and isinstance(end_date_str, str):
                 active_drivers = DriverService.get_active_drivers(
                     start_date_str, end_date_str
@@ -36,197 +62,118 @@ def revenue_form(existing_data=None):
                     end_date_str.strftime("%Y-%m-%d"),
                 )
         else:
-            # Caso contrário, obtemos todos os motoristas
-            active_drivers = DriverService.get_all(condition={'active': True})
-
-        driver_options = (
-            {driver[0]: f"{driver[1]}" for driver in active_drivers}
-            if active_drivers
-            else {}
+            # Otherwise, get all active drivers
+            drivers_df = DriverService.get_many(conditions={'is_active': True})
+            active_drivers = [(driver['id'], driver['display_name']) for _, driver in drivers_df.iterrows()]
+            
+        driver_options = {driver[0]: driver[1] for driver in active_drivers} if active_drivers else {}
+        
+        form.create_field(
+            key="driver_id",
+            label="Motorista",
+            type="select",
+            required=True,
+            options=list(driver_options.keys()) if driver_options else [],
+            format_func=lambda x: driver_options.get(x, "Selecione um motorista"),
+            help="Selecione o motorista para este registo"
         )
-
-        # Carregar veículos
-        cars = CarService.get_all_license_plates()
-        car_options = (
-            {car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars} if cars else {}
-        )
+        
+        # Store driver name in a hidden field
+        if form.data.get("driver_id") in driver_options:
+            form.data["driver_name"] = driver_options[form.data["driver_id"]]
     except Exception as e:
-        st.error(f"Erro ao carregar dados: {str(e)}")
-        driver_options = {}
-        car_options = {}
-
-    # Create a form for data entry
-    with st.form("revenue_entry_form", clear_on_submit=clear_form):
-        # Create two columns for better layout
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # Use existing data if available
-            default_start_date = existing_data.get("start_date")
-            default_end_date = existing_data.get("end_date")
-
-            start_date = st.date_input(
-                "Data Início *",
-                value=default_start_date,
-                help="Data de início do período de receita",
-            )
-
-            end_date = st.date_input(
-                "Data Fim *",
-                value=default_end_date,
-                help="Data de fim do período de receita",
-            )
-
-            # Driver selection
-            default_driver_index = 0
-            if existing_data.get("driver_id") in driver_options:
-                default_driver_index = list(driver_options.keys()).index(
-                    existing_data.get("driver_id")
-                )
-
-            driver_id = st.selectbox(
-                "Motorista *",
-                options=list(driver_options.keys()) if driver_options else [],
-                format_func=lambda x: driver_options.get(x, "Selecione um motorista"),
-                index=(
-                    default_driver_index
-                    if driver_options and default_driver_index < len(driver_options)
-                    else 0
-                ),
-                help="Selecione o motorista para este registo",
-                disabled=not driver_options,
-            )
-
-            # Get the driver name from the selection
-            driver_name = driver_options.get(driver_id, "") if driver_id else ""
-
-            platform = st.selectbox(
-                "Plataforma *",
-                options=["Uber", "Bolt", "Transfer"],
-                index=(
-                    ["Uber", "Bolt", "Transfer"].index(
-                        existing_data.get("platform", "Uber")
-                    )
-                    if existing_data.get("platform") in ["Uber", "Bolt", "Transfer"]
-                    else 0
-                ),
-                help="Selecione a plataforma onde o serviço foi prestado",
-            )
-
-            commission = st.number_input(
-                "Comissão (%)",
-                min_value=0.0,
-                max_value=100.0,
-                value=float(existing_data.get("commission_percentage", 0.0)),
-                step=0.1,
-                format="%.1f",
-                help="Percentagem de comissão da plataforma",
-            )
-
-        with col2:
-            # Car selection
-            default_car_index = 0
-            if existing_data.get("car_id") in car_options:
-                default_car_index = list(car_options.keys()).index(
-                    existing_data.get("car_id")
-                )
-
-            car_id = st.selectbox(
-                "Veículo *",
-                options=list(car_options.keys()) if car_options else [],
-                format_func=lambda x: car_options.get(x, "Selecione um veículo"),
-                index=(
-                    default_car_index
-                    if car_options and default_car_index < len(car_options)
-                    else 0
-                ),
-                help="Selecione o veículo utilizado para estes serviços",
-                disabled=not car_options,
-            )
-
-            # Get the license plate from the selection
-            license_plate = ""
-            if car_id and car_id in car_options:
-                car_info = car_options.get(car_id, "")
-                # Extract just the license plate from the display string
-                # Format is typically "XX-XX-XX (Brand Model)"
-                license_plate = car_info.split(" ")[
-                    0
-                ]  # Get the first part before space
-            elif existing_data.get("license_plate"):
-                license_plate = existing_data.get("license_plate")
-
-            gross_revenue = st.number_input(
-                "Receita Bruta *",
-                min_value=0.0,
-                value=float(existing_data.get("gross_revenue", 0.0)),
-                step=0.01,
-                format="%.2f",
-                help="Receita total antes da comissão",
-            )
-
-            num_travels = st.number_input(
-                "Número de Viagens *",
-                min_value=0,
-                value=int(existing_data.get("num_travels", 0)),
-                step=1,
-                help="Número total de viagens realizadas",
-            )
-
-            tip = st.number_input(
-                "Gorjeta",
-                min_value=0.0,
-                value=float(existing_data.get("tip", 0.0)),
-                step=0.01,
-                format="%.2f",
-                help="Total de gorjetas recebidas",
-            )
-
-            num_kms = st.number_input(
-                "Número de Quilómetros *",
-                min_value=0.0,
-                value=float(existing_data.get("num_kilometers", 0.0)),
-                step=0.1,
-                format="%.1f",
-                help="Distância total percorrida",
-            )
-
-        # Mark required fields
-        st.markdown("**Campos obrigatórios*")
-
-        # Add a submit button to the form
-        submit_button = st.form_submit_button(
-            "Atualizar" if existing_data.get("id") else "Submeter",
-            use_container_width=True,
+        st.error(f"Erro ao carregar motoristas: {str(e)}")
+    
+    # Load cars
+    try:
+        cars = CarService.get_all_license_plates()
+        car_options = {car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars} if cars else {}
+        
+        form.create_field(
+            key="car_id",
+            label="Veículo",
+            type="select",
+            required=True,
+            options=list(car_options.keys()) if car_options else [],
+            format_func=lambda x: car_options.get(x, "Selecione um veículo"),
+            help="Selecione o veículo utilizado para estes serviços"
         )
+        
+        # Store license plate in a hidden field
+        if form.data.get("car_id") in car_options:
+            car_info = car_options[form.data["car_id"]]
+            form.data["license_plate"] = car_info.split(" ")[0]
+    except Exception as e:
+        st.error(f"Erro ao carregar veículos: {str(e)}")
 
-    # Return the form data and submit state
-    if submit_button:
-        # Verificar se temos motoristas e veículos carregados
-        if not driver_options:
-            st.error("Não foi possível carregar a lista de motoristas.")
-            return submit_button, None
+    # Revenue information
+    form.create_section("Valores e Viagens")
+    
+    form.create_columns(2)
+    form.create_field(
+        key="gross_revenue",
+        label="Receita Bruta",
+        type="number",
+        required=True,
+        min_value=0.0,
+        step=0.01,
+        format="%.2f",
+        help="Receita total antes da comissão"
+    )
+    
+    form.create_field(
+        key="commission_percentage",
+        label="Comissão (%)",
+        type="number",
+        min_value=0.0,
+        max_value=100.0,
+        step=0.1,
+        format="%.1f",
+        help="Percentagem de comissão da plataforma"
+    )
+    form.end_columns()
+    
+    form.create_columns(2)
+    form.create_field(
+        key="tip",
+        label="Gorjeta",
+        type="number",
+        min_value=0.0,
+        default=0.0,
+        step=0.01,
+        format="%.2f",
+        help="Total de gorjetas recebidas"
+    )
+    
+    form.create_field(
+        key="num_travels",
+        label="Número de Viagens",
+        type="number",
+        required=True,
+        min_value=0,
+        step=1,
+        help="Número total de viagens realizadas"
+    )
+    form.end_columns()
+    
+    form.create_field(
+        key="num_kilometers",
+        label="Número de Quilómetros",
+        type="number",
+        required=True,
+        min_value=0.0,
+        step=0.1,
+        format="%.1f",
+        help="Distância total percorrida"
+    )
+    
+    # Populate form with existing data if available
+    if existing_data:
+        for key, value in existing_data.items():
+            if key in form.data:
+                form.data[key] = value
+    
+    # Required fields notice
+    form.create_section(None, "**Campos obrigatórios*")
 
-        if not car_options:
-            st.error("Não foi possível carregar a lista de veículos.")
-            return submit_button, None
-
-        # Prepare data dictionary
-        data = {
-            "start_date": start_date.strftime("%Y-%m-%d"),
-            "end_date": end_date.strftime("%Y-%m-%d"),
-            "driver_name": driver_name,
-            "license_plate": license_plate,
-            "platform": platform,
-            "gross_revenue": gross_revenue,
-            "commission_percentage": commission,
-            "tip": tip,
-            "num_travels": num_travels,
-            "num_kilometers": num_kms,
-        }
-
-        # Add ID if it exists (for updates)
-        if existing_data.get("id"):
-            data["id"] = existing_data.get("id")
-
-    return submit_button, data
+    return form
