@@ -183,16 +183,6 @@ def show_car_expenses_view():
 
         # Store filtered IDs for bulk delete
         filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
-        
-        # Add New Car Expense and Delete All buttons side by side
-        col1, col2 = st.columns(2)
-        with col1:
-            st.page_link(
-                "sections/car_expenses/add.py",
-                label="Adicionar Nova Despesa de Veículo",
-                icon="➕",
-                use_container_width=True,
-            )
             
         # The delete all button will only be displayed if there are filtered expenses
         with col2:
@@ -210,15 +200,6 @@ def show_car_expenses_view():
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} despesas de veículos encontradas")
 
-        # Map expense types to Portuguese for display
-        type_map = {
-            "Credit": "Crédito",
-            "Gasoline": "Combustível",
-            "Tolls": "Portagens",
-            "Repairs": "Reparações",
-            "Washing": "Lavagem",
-        }
-
         # Table header
         header_cols = st.columns([2.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1, 1])
         header_cols[0].markdown("**Tipo**")
@@ -234,13 +215,8 @@ def show_car_expenses_view():
 
         # Display each car expense as a compact row
         for i, (_, expense) in enumerate(filtered_df.iterrows()):
-            # Translate expense type for display if needed
-            if expense["expense_type"] in type_map:
-                expense_pt = expense.copy()
-                expense_pt["expense_type"] = type_map[expense["expense_type"]]
-                car_expense_row(expense_pt)
-            else:
-                car_expense_row(expense)
+            
+            car_expense_row(expense)
 
 
 # Execute the function if this file is run directly
