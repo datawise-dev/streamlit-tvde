@@ -119,6 +119,16 @@ def show_ga_expenses_view():
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
 
+    # Add New G&A Expense and Delete All buttons side by side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.page_link(
+            "sections/ga_expenses/add.py",
+            label="Adicionar Nova Despesa G&A",
+            icon="➕",
+            use_container_width=True,
+        )
+
     if submit_button or "ga_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
@@ -166,16 +176,7 @@ def show_ga_expenses_view():
         
         # Armazenar os IDs filtrados
         filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
-        
-        # Add New G&A Expense and Delete All buttons side by side
-        col1, col2 = st.columns(2)
-        with col1:
-            st.page_link(
-                "sections/ga_expenses/add.py",
-                label="Adicionar Nova Despesa G&A",
-                icon="➕",
-                use_container_width=True,
-            )
+    
 
         # O botão de eliminar todas será exibido apenas se houver despesas filtradas
         with col2:

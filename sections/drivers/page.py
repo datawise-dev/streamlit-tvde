@@ -108,7 +108,17 @@ def show_drivers_view():
             )
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
-
+    
+    # Add New Driver and Delete All buttons side by side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.page_link(
+            "sections/drivers/add.py",
+            label="Adicionar Novo Motorista",
+            icon="➕",
+            use_container_width=True,
+        )
+    
     if submit_button or "drivers_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
             try:
@@ -140,16 +150,6 @@ def show_drivers_view():
 
         # Store filtered IDs for bulk delete
         filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
-        
-        # Add New Driver and Delete All buttons side by side
-        col1, col2 = st.columns(2)
-        with col1:
-            st.page_link(
-                "sections/drivers/add.py",
-                label="Adicionar Novo Motorista",
-                icon="➕",
-                use_container_width=True,
-            )
             
         # The delete all button will only be displayed if there are filtered drivers
         with col2:

@@ -87,6 +87,16 @@ def show_hr_expenses_view():
             )
 
         submit_button = st.form_submit_button("Pesquisar", use_container_width=True)
+    
+    # Add New HR Expense and Delete All buttons side by side
+    col1, col2 = st.columns(2)
+    with col1:
+        st.page_link(
+            "sections/hr_expenses/add.py",
+            label="Adicionar Nova Despesa RH",
+            icon="➕",
+            use_container_width=True,
+        )
 
     if submit_button or "hr_expenses_data_loaded" in st.session_state:
         with st.spinner("A carregar dados...", show_time=True):
@@ -120,16 +130,6 @@ def show_hr_expenses_view():
 
         # Store filtered IDs for bulk delete
         filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
-        
-        # Add New HR Expense and Delete All buttons side by side
-        col1, col2 = st.columns(2)
-        with col1:
-            st.page_link(
-                "sections/hr_expenses/add.py",
-                label="Adicionar Nova Despesa RH",
-                icon="➕",
-                use_container_width=True,
-            )
             
         # The delete all button will only be displayed if there are filtered expenses
         with col2:
