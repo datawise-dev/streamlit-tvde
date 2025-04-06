@@ -3,7 +3,7 @@ import pandas as pd
 from sections.drivers.service import DriverService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.drivers.delete import delete_driver
+from sections.drivers.delete import delete_driver, bulk_delete_drivers
 
 
 def driver_card(driver):
@@ -145,6 +145,32 @@ def show_drivers_view():
 
         if is_active_filter:
             filtered_df = filtered_df[filtered_df["is_active"]]
+
+        # Store filtered IDs for bulk delete
+        filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
+        
+        # Add New Driver and Delete All buttons side by side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/drivers/add.py",
+                label="Adicionar Novo Motorista",
+                icon="➕",
+                use_container_width=True,
+            )
+            
+        # The delete all button will only be displayed if there are filtered drivers
+        with col2:
+            if filtered_ids:
+                st.button(
+                    "🗑️ Eliminar Todos",
+                    key="delete_all_button",
+                    on_click=bulk_delete_drivers,
+                    type="tertiary",
+                    args=(filtered_ids,),
+                    help=f"Eliminar todos os {len(filtered_ids)} motoristas filtrados",
+                    use_container_width=True,
+                )
 
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} motoristas encontrados")

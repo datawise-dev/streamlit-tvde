@@ -3,7 +3,7 @@ import pandas as pd
 from sections.ga_expenses.service import GAExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.ga_expenses.delete import delete_ga_expense, delete_all_ga_expenses
+from sections.ga_expenses.delete import delete_ga_expense, bulk_delete_ga_expenses
 from sections.ga_expenses.form import expense_type_options
 
 
@@ -183,7 +183,7 @@ def show_ga_expenses_view():
                 st.button(
                     "🗑️ Eliminar Todas",
                     key="delete_all_button",
-                    on_click=delete_all_ga_expenses,
+                    on_click=bulk_delete_ga_expenses,
                     type="tertiary",
                     args=(filtered_ids,),
                     help=f"Eliminar todas as {len(filtered_ids)} despesas G&A filtradas",

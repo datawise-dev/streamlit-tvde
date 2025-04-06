@@ -3,7 +3,7 @@ import pandas as pd
 from sections.cars.service import CarService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.cars.delete import delete_car
+from sections.cars.delete import delete_car, bulk_delete_cars
 
 
 def car_card(car):
@@ -144,6 +144,32 @@ def show_cars_view():
 
         if is_active_filter and "is_active" in filtered_df.columns:
             filtered_df = filtered_df[filtered_df["is_active"]]
+
+        # Store filtered IDs for bulk delete
+        filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
+        
+        # Add New Car and Delete All buttons side by side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/cars/add.py",
+                label="Adicionar Novo Veículo",
+                icon="➕",
+                use_container_width=True,
+            )
+            
+        # The delete all button will only be displayed if there are filtered cars
+        with col2:
+            if filtered_ids:
+                st.button(
+                    "🗑️ Eliminar Todos",
+                    key="delete_all_button",
+                    on_click=bulk_delete_cars,
+                    type="tertiary",
+                    args=(filtered_ids,),
+                    help=f"Eliminar todos os {len(filtered_ids)} veículos filtrados",
+                    use_container_width=True,
+                )
 
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} veículos encontrados")

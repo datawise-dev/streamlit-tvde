@@ -3,7 +3,7 @@ import pandas as pd
 from sections.car_expenses.service import CarExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.car_expenses.delete import delete_car_expense
+from sections.car_expenses.delete import delete_car_expense, bulk_delete_car_expenses
 
 
 def car_expense_row(expense):
@@ -177,6 +177,32 @@ def show_car_expenses_view():
                     (filtered_df["created_at"] >= pd.to_datetime(date_range[0]))
                     & (filtered_df["created_at"] <= pd.to_datetime(date_range[1]))
                 ]
+
+        # Store filtered IDs for bulk delete
+        filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
+        
+        # Add New Car Expense and Delete All buttons side by side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/car_expenses/add.py",
+                label="Adicionar Nova Despesa de Veículo",
+                icon="➕",
+                use_container_width=True,
+            )
+            
+        # The delete all button will only be displayed if there are filtered expenses
+        with col2:
+            if filtered_ids:
+                st.button(
+                    "🗑️ Eliminar Todas",
+                    key="delete_all_button",
+                    on_click=bulk_delete_car_expenses,
+                    type="tertiary",
+                    args=(filtered_ids,),
+                    help=f"Eliminar todas as {len(filtered_ids)} despesas de veículo filtradas",
+                    use_container_width=True,
+                )
 
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} despesas de veículos encontradas")

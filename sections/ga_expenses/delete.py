@@ -13,7 +13,7 @@ def delete_ga_expense(expense_id):
         redirect_path="sections/ga_expenses/page.py"
     )
 
-def delete_all_ga_expenses(expense_ids: List[int]):
+def bulk_delete_ga_expenses(expense_ids: List[int]):
     """Dialog to confirm deletion of multiple G&A expenses."""
     generic_bulk_delete(
         record_ids=expense_ids,

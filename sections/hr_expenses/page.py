@@ -3,7 +3,7 @@ import pandas as pd
 from sections.hr_expenses.service import HRExpenseService
 from utils.error_handlers import handle_streamlit_error
 from utils.navigation import switch_page
-from sections.hr_expenses.delete import delete_hr_expense
+from sections.hr_expenses.delete import delete_hr_expense, bulk_delete_hr_expenses
 
 
 def hr_expense_row(expense):
@@ -125,6 +125,32 @@ def show_hr_expenses_view():
                 (filtered_df["payment_date"] >= pd.to_datetime(date_range[0]))
                 & (filtered_df["payment_date"] <= pd.to_datetime(date_range[1]))
             ]
+
+        # Store filtered IDs for bulk delete
+        filtered_ids = filtered_df["id"].tolist() if not filtered_df.empty else []
+        
+        # Add New HR Expense and Delete All buttons side by side
+        col1, col2 = st.columns(2)
+        with col1:
+            st.page_link(
+                "sections/hr_expenses/add.py",
+                label="Adicionar Nova Despesa RH",
+                icon="➕",
+                use_container_width=True,
+            )
+            
+        # The delete all button will only be displayed if there are filtered expenses
+        with col2:
+            if filtered_ids:
+                st.button(
+                    "🗑️ Eliminar Todas",
+                    key="delete_all_button",
+                    on_click=bulk_delete_hr_expenses,
+                    type="tertiary",
+                    args=(filtered_ids,),
+                    help=f"Eliminar todas as {len(filtered_ids)} despesas RH filtradas",
+                    use_container_width=True,
+                )
 
         # Display results summary
         st.subheader(f"Resultados: {len(filtered_df)} despesas encontradas")
