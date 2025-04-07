@@ -46,65 +46,52 @@ def revenue_form(existing_data=None):
     form.create_section("Motorista e Veículo")
     
     # Load drivers
-    try:
-        # If we have existing dates, use them to filter active drivers
-        if existing_data and "start_date" in existing_data and "end_date" in existing_data:
-            start_date_str = existing_data["start_date"]
-            end_date_str = existing_data["end_date"]
-            
-            if isinstance(start_date_str, str) and isinstance(end_date_str, str):
-                active_drivers = DriverService.get_active_drivers(
-                    start_date_str, end_date_str
-                )
-            else:
-                active_drivers = DriverService.get_active_drivers(
-                    start_date_str.strftime("%Y-%m-%d"),
-                    end_date_str.strftime("%Y-%m-%d"),
-                )
+    # If we have existing dates, use them to filter active drivers
+    if existing_data and "start_date" in existing_data and "end_date" in existing_data:
+        start_date_str = existing_data["start_date"]
+        end_date_str = existing_data["end_date"]
+        
+        if isinstance(start_date_str, str) and isinstance(end_date_str, str):
+            active_drivers = DriverService.get_active_drivers(
+                start_date_str, end_date_str
+            )
         else:
-            # Otherwise, get all active drivers
-            drivers_df = DriverService.get_many(conditions={'is_active': True})
-            active_drivers = [(driver['id'], driver['display_name']) for _, driver in drivers_df.iterrows()]
-            
-        driver_options = {driver[0]: driver[1] for driver in active_drivers} if active_drivers else {}
+            active_drivers = DriverService.get_active_drivers(
+                start_date_str.strftime("%Y-%m-%d"),
+                end_date_str.strftime("%Y-%m-%d"),
+            )
+    else:
+        # Otherwise, get all active drivers
+        drivers_df = DriverService.get_many(conditions={'is_active': True})
+        active_drivers = [(driver['id'], driver['display_name']) for _, driver in drivers_df.iterrows()]
         
-        form.create_field(
-            key="driver_id",
-            label="Motorista",
-            type="select",
-            required=True,
-            options=list(driver_options.keys()) if driver_options else [],
-            format_func=lambda x: driver_options.get(x, "Selecione um motorista"),
-            help="Selecione o motorista para este registo"
-        )
-        
-        # Store driver name in a hidden field
-        if form.data.get("driver_id") in driver_options:
-            form.data["driver_name"] = driver_options[form.data["driver_id"]]
-    except Exception as e:
-        st.error(f"Erro ao carregar motoristas: {str(e)}")
+    driver_options = {driver[0]: driver[1] for driver in active_drivers} if active_drivers else {}
+    
+    form.create_columns(2)
+    form.create_field(
+        key="driver_id",
+        label="Motorista",
+        type="select",
+        required=True,
+        options=list(driver_options.keys()) if driver_options else [],
+        format_func=lambda x: driver_options.get(x, "Selecione um motorista"),
+        help="Selecione o motorista para este registo"
+    )
     
     # Load cars
-    try:
-        cars = CarService.get_all_license_plates()
-        car_options = {car[0]: f"{car[1]} ({car[2]} {car[3]})" for car in cars} if cars else {}
-        
-        form.create_field(
-            key="car_id",
-            label="Veículo",
-            type="select",
-            required=True,
-            options=list(car_options.keys()) if car_options else [],
-            format_func=lambda x: car_options.get(x, "Selecione um veículo"),
-            help="Selecione o veículo utilizado para estes serviços"
-        )
-        
-        # Store license plate in a hidden field
-        if form.data.get("car_id") in car_options:
-            car_info = car_options[form.data["car_id"]]
-            form.data["license_plate"] = car_info.split(" ")[0]
-    except Exception as e:
-        st.error(f"Erro ao carregar veículos: {str(e)}")
+    cars = CarService.get_all_license_plates()
+    car_options = {car[0]: car[1] for car in cars} if cars else {}
+
+    form.create_field(
+        key="car_id",
+        label="Veículo",
+        type="select",
+        required=True,
+        options=list(car_options.keys()) if car_options else [],
+        format_func=lambda x: car_options.get(x, "Selecione um veículo"),
+        help="Selecione o veículo utilizado para estes serviços"
+    )
+    form.end_columns()
 
     # Revenue information
     form.create_section("Valores e Viagens")
@@ -149,9 +136,8 @@ def revenue_form(existing_data=None):
         key="num_travels",
         label="Número de Viagens",
         type="number",
-        required=True,
-        min_value=0,
-        step=1,
+        min_value=0.0,
+        step=1.0,
         help="Número total de viagens realizadas"
     )
     form.end_columns()
@@ -160,7 +146,6 @@ def revenue_form(existing_data=None):
         key="num_kilometers",
         label="Número de Quilómetros",
         type="number",
-        required=True,
         min_value=0.0,
         step=0.1,
         format="%.1f",
