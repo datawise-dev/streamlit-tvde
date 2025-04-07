@@ -1,12 +1,11 @@
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 from database.connection import get_db_connection, get_db_engine
-from datetime import datetime, date
+from datetime import date
 import calendar
 from dateutil.relativedelta import relativedelta
 from utils.base_service import BaseService
 from utils.error_handlers import handle_service_error
-from utils.validators import validate_data, get_hr_expense_validators
 
 class HRExpenseService(BaseService):
     """

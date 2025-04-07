@@ -1,9 +1,8 @@
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
-from database.connection import get_db_connection, get_db_engine
+from typing import Dict
+from database.connection import get_db_engine
 from utils.base_service import BaseService
 from utils.error_handlers import handle_service_error
-from utils.validators import validate_data, get_ga_expense_validators
 
 
 class GAExpenseService(BaseService):
