@@ -25,6 +25,11 @@ def create_custom_sidebar():
         st.page_link("sections/hr_expenses/page.py", label="👥 RH")
         st.page_link("sections/car_expenses/page.py", label="🚗 Veículos")
         st.page_link("sections/ga_expenses/page.py", label="📊 G&A")
+
+        # Calendar section
+        st.subheader("🗓️ Calendário")
+        st.page_link("sections/drivers/calendar.py", label="🧑‍💼 Motoristas")
+        st.page_link("sections/cars/calendar.py", label="🚗 Veículos")
         
         # Help section
         st.subheader("❓ Ajuda")
@@ -50,12 +55,13 @@ def main():
         st.Page("sections/hr_expenses/page.py", title="HR Expenses", icon="👥", url_path="hr_expenses"),
         st.Page("sections/car_expenses/page.py", title="Car Expenses", icon="🚗", url_path="car_expenses"),
         st.Page("sections/ga_expenses/page.py", title="G&A Expenses", icon="📊", url_path="ga_expenses"),
+        st.Page("sections/drivers/calendar.py", title="Calendário de Motoristas", icon="🧑‍💼", url_path="drivers_calendar"),
+        st.Page("sections/cars/calendar.py", title="Calendário de Veículos", icon="🚗", url_path="cars_calendar"),
         st.Page("sections/faq.py", title="FAQs", icon="❓"),
         
         # Hidden pages (accessible via links)
         st.Page("sections/revenues/add.py", title="Add Revenue Item", icon="➕", url_path="revenue_add"),
         st.Page("sections/revenues/edit.py", title="Edit Revenue Item", icon="✏️", url_path="revenue_edit"),
-
         st.Page("sections/drivers/add.py", title="Add Driver", icon="➕", url_path="drivers_add"),
         st.Page("sections/drivers/edit.py", title="Edit Driver", icon="✏️", url_path="drivers_edit"),
         st.Page("sections/cars/add.py", title="Add Car", icon="➕", url_path="car_add"),
